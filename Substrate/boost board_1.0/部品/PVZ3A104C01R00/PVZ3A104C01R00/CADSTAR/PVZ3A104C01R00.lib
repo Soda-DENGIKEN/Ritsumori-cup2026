@@ -1,0 +1,16 @@
+.PVZ3A104C01R00 :1 ;Murata PVZ3 Series SMD Trimmer Resistor with J-Hook Terminations, 100k +/-30% 1/10W +/-500ppm/C Top Adjust
+PVZ3A104C01R00
+*STM VR
+*NGS
+*PLB 1="CCW" 2="WIPER" 3="CW"
+*MXP 3
+*DFN PVZ3A104C01R00
+~!RS Part Number (7250167P)
+~!Link RS Price/Stock (http://uk.rs-online.com/web/p/products/7250167P)
+~!Manufacturer_Name (Murata Electronics)
+~!Manufacturer_Part_Number (PVZ3A104C01R00)
+~!Link Datasheet (http://uk.rs-online.com/web/p/products/7250167P)
+~!Height (1.95mm)
+~!3D_Model (PVZ3A104C01R00)
+PVZ3A104C01R00
+1.1!U 2.1!U 3.1!U 

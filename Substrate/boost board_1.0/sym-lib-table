@@ -1,0 +1,6 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "LM2577S-ADJ_NOPB")(type "KiCad")(uri "${KIPRJMOD}/部品/LM2577S-ADJ_NOPB/LM2577S-ADJ_NOPB/KiCad/LM2577S-ADJ_NOPB.kicad_sym")(options "")(descr ""))
+  (lib (name "PVZ3A104C01R00")(type "KiCad")(uri "${KIPRJMOD}/部品/PVZ3A104C01R00/PVZ3A104C01R00/KiCad/PVZ3A104C01R00.kicad_sym")(options "")(descr ""))
+  (lib (name "AQW212")(type "KiCad")(uri "C:/Users/tomo-/Downloads/部活/Soda_DENGIKEN/RCJ2026/基板/RCJ2026 kicker board/部品/AQW212/AQW212/KiCad/AQW212.kicad_sym")(options "")(descr ""))
+)

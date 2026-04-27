@@ -1,0 +1,11 @@
+FILE_TYPE = MULTI_PHYS_TABLE;
+
+PART 'LM2577S_ADJ_NOPB'
+CLASS = IC
+{========================================================================================}
+:"MANUFACTURER_NAME", "MANUFACTURER_PART_NUMBER"= "PART_NUMBER", "JEDEC_TYPE", "PACK_TYPE", "RS_PART_NUMBER", "RS_PRICE/STOCK", "DESCRIPTION", "DATASHEET";
+{========================================================================================}
+ "Texas Instruments", "LM2577S-ADJ/NOPB" (!) = "", "KTT0005B", "Other", "7615505P", "http://uk.rs-online.com/web/p/products/7615505P", "DC-DC Converter Step Up 3.5-40V TO263-6 Texas Instruments LM2577S-ADJ/NOPB, Step Up DC-DC Converter, 3A, Adjustable, 1.23  12 V, 5-Pin TO-263", "http://uk.rs-online.com/web/p/products/7615505P"
+END_PART
+
+END.

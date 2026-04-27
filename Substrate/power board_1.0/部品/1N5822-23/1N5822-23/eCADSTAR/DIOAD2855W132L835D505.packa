@@ -1,0 +1,13 @@
+(unit MM)
+
+(package "1N5822-23"
+    (type UNDEF)
+    (uver 2)
+    (cuser "SamacSys")
+    (uuser "SamacSys")
+    (utime 2021-03-15-04:44:46)
+    (mountForm default
+        (footprintRef "DIOAD2855W132L835D505")
+        (spec "System")
+    )
+)

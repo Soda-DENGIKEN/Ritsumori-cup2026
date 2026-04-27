@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--/2054206/1590527/2.50/2/4/Schottky Diode/-->
+<quadcept_library>
+  <setting unit="mil" />
+  <textstyle name="Default" height="47.244094488189" strokewidth="7.8740157480315" charwidth="47.244094488189" />
+  <textstyle name="Dimension" height="19.6850393700787" strokewidth="0" charwidth="19.6850393700787" />
+  <textstyle name="H127W0635TH00762" height="50" strokewidth="3" charwidth="25" />
+  <textstyle name="H15W15TH02" height="59.0551181102362" strokewidth="7.8740157480315" charwidth="59.0551181102362" />
+  <padstyle name="c225_h150" surface="False" plated="True" isvia="False" nopaste="True" nomask="True" complex="False" holesize="59.055118110235">
+    <padshape layer="TOP" shape="round" width="88.582677165353" height="88.582677165353" />
+    <padshape layer="TOP_SOLDER_MASK" shape="round" width="96.456692913385" height="96.456692913385" />
+    <padshape layer="INNER" shape="round" width="88.582677165353" height="88.582677165353" />
+    <padshape layer="BOTTOM" shape="round" width="88.582677165353" height="88.582677165353" />
+    <padshape layer="BOTTOM_SOLDER_MASK" shape="round" width="96.456692913385" height="96.456692913385" />
+  </padstyle>
+  <padstyle name="s225_h150" surface="False" plated="True" isvia="False" nopaste="True" nomask="True" complex="False" holesize="59.055118110235">
+    <padshape layer="TOP" shape="square" width="88.582677165353" height="88.582677165353" />
+    <padshape layer="TOP_SOLDER_MASK" shape="square" width="96.456692913385" height="96.456692913385" />
+    <padshape layer="INNER" shape="round" width="88.582677165353" height="88.582677165353" />
+    <padshape layer="BOTTOM" shape="square" width="88.582677165353" height="88.582677165353" />
+    <padshape layer="BOTTOM_SOLDER_MASK" shape="square" width="96.456692913385" height="96.456692913385" />
+  </padstyle>
+  <footprint name="DIOAD2855W132L835D505" originx="0" originy="0" pickpointx="0" pickpointy="0">
+    <pcbpin number="1" name="1" style="s225_h150" originx="0" originy="0" rotation="90" />
+    <pcbpin number="2" name="2" style="c225_h150" originx="1125.9842519685" originy="0" rotation="90" />
+    <line layer="TOP_PLACE_BOUND" originx="-54.133858267716" originy="113.18897637795" endx="1180.1181102362" endy="113.18897637795" width="1.9685039370079" />
+    <line layer="TOP_PLACE_BOUND" originx="1180.1181102362" originy="113.18897637795" endx="1180.1181102362" endy="-113.18897637795" width="1.9685039370079" />
+    <line layer="TOP_PLACE_BOUND" originx="1180.1181102362" originy="-113.18897637795" endx="-54.133858267716" endy="-113.18897637795" width="1.9685039370079" />
+    <line layer="TOP_PLACE_BOUND" originx="-54.133858267716" originy="-113.18897637795" endx="-54.133858267716" endy="113.18897637795" width="1.9685039370079" />
+    <line layer="TOP_ASSEMBLY" originx="398.62204724409" originy="99.409448818896" endx="727.3622047244" endy="99.409448818896" width="3.9370078740157" />
+    <line layer="TOP_ASSEMBLY" originx="727.3622047244" originy="99.409448818896" endx="727.3622047244" endy="-99.409448818896" width="3.9370078740157" />
+    <line layer="TOP_ASSEMBLY" originx="727.3622047244" originy="-99.409448818896" endx="398.62204724409" endy="-99.409448818896" width="3.9370078740157" />
+    <line layer="TOP_ASSEMBLY" originx="398.62204724409" originy="-99.409448818896" endx="398.62204724409" endy="99.409448818896" width="3.9370078740157" />
+    <line layer="TOP_ASSEMBLY" originx="398.62204724409" originy="0" endx="498.03149606299" endy="99.409448818896" width="3.9370078740157" />
+    <line layer="TOP_ASSEMBLY" originx="0" originy="0" endx="398.62204724409" endy="0" width="3.9370078740157" />
+    <line layer="TOP_ASSEMBLY" originx="727.3622047244" originy="0" endx="1125.9842519685" endy="0" width="3.9370078740157" />
+    <line layer="TOP_SILKSCREEN" originx="398.62204724409" originy="99.409448818896" endx="727.3622047244" endy="99.409448818896" width="7.8740157480314" />
+    <line layer="TOP_SILKSCREEN" originx="727.3622047244" originy="99.409448818896" endx="727.3622047244" endy="-99.409448818896" width="7.8740157480314" />
+    <line layer="TOP_SILKSCREEN" originx="727.3622047244" originy="-99.409448818896" endx="398.62204724409" endy="-99.409448818896" width="7.8740157480314" />
+    <line layer="TOP_SILKSCREEN" originx="398.62204724409" originy="-99.409448818896" endx="398.62204724409" endy="99.409448818896" width="7.8740157480314" />
+    <line layer="TOP_SILKSCREEN" originx="398.62204724409" originy="0" endx="498.03149606299" endy="99.409448818896" width="7.8740157480314" />
+    <line layer="TOP_SILKSCREEN" originx="58.070866141732" originy="0" endx="398.62204724409" endy="0" width="7.8740157480314" />
+    <line layer="TOP_SILKSCREEN" originx="727.3622047244" originy="0" endx="1067.9133858268" endy="0" width="7.8740157480314" />
+  </footprint>
+  <symbol name="1N5822-23" originx="0" originy="0">
+    <line originx="300" originy="100" endx="300" endy="-100" width="0" />
+    <line originx="300" originy="100" endx="340" endy="100" width="0" />
+    <line originx="340" originy="60" endx="340" endy="100" width="0" />
+    <line originx="300" originy="-100" endx="260" endy="-100" width="0" />
+    <line originx="260" originy="-60" endx="260" endy="-100" width="0" />
+    <line originx="200" originy="0" endx="300" endy="0" width="0" />
+    <line originx="500" originy="0" endx="600" endy="0" width="0" />
+    <sympin number="1" originx="200" originy="0" rotation="180" length="100" width="7.8740157480315" flipped="False">
+      <text name="pinname" originx="240" originy="10" style="Default" rotation="0" justify="left" flipped="False" hidden="True" data="K" />
+      <text name="pindes" originx="160" originy="10" style="Default" rotation="0" justify="lowerright" flipped="False" hidden="False" data="1" />
+    </sympin>
+    <sympin number="2" originx="600" originy="0" rotation="0" length="100" width="7.8740157480315" flipped="False">
+      <text name="pinname" originx="560" originy="10" style="Default" rotation="0" justify="right" flipped="False" hidden="True" data="A" />
+      <text name="pindes" originx="640" originy="10" style="Default" rotation="0" justify="lowerleft" flipped="False" hidden="False" data="2" />
+    </sympin>
+    <polygon type="polygon">
+      <point x="300" y="0" />
+      <point x="500" y="100" />
+      <point x="500" y="-100" />
+    </polygon>
+  </symbol>
+  <component name="1N5822-23" designatorprefix="D" height="0" footprint="DIOAD2855W132L835D505">
+    <comppin designator="1" sympin="1" pinswap="0" gateswap="0" gate="1" group="1" side="" type="Any" name="K" />
+    <comppin designator="2" sympin="2" pinswap="0" gateswap="0" gate="1" group="1" side="" type="Any" name="A" />
+    <attached_symbol gate="1" name="1N5822-23" />
+    <pinmap designator="1" footprintpin="1" />
+    <pinmap designator="2" footprintpin="2" />
+    <text name="Datasheet" originx="0" originy="0" style="Default" rotation="0" justify="" flipped="False" hidden="True" data="https://g.componentsearchengine.com/Datasheets/1/1N5822-23.pdf" />
+    <text name="Description" originx="0" originy="0" style="Default" rotation="0" justify="" flipped="False" hidden="True" data="Schottky Diodes &amp; Rectifiers" />
+    <text name="RS Part Number" originx="0" originy="0" style="Default" rotation="0" justify="" flipped="False" hidden="True" data="" />
+    <text name="RS Price/Stock" originx="0" originy="0" style="Default" rotation="0" justify="" flipped="False" hidden="True" data="" />
+    <text name="Manufacturer_Name" originx="0" originy="0" style="Default" rotation="0" justify="" flipped="False" hidden="True" data="Vishay" />
+    <text name="Manufacturer_Part_Number" originx="500" originy="250" style="Default" rotation="0" justify="left" flipped="False" hidden="False" data="1N5822-23" />
+  </component>
+</quadcept_library>

@@ -1,0 +1,219 @@
+(footprint "LM2577S-ADJ_NOPB"
+	(version 20240108)
+	(generator "pcbnew")
+	(generator_version "8.0")
+	(layer "F.Cu")
+	(descr "KTT0005B")
+	(tags "Integrated Circuit")
+	(property "Reference" "IC**"
+		(at 0 -6 0)
+		(layer "F.SilkS")
+		(uuid "3a63c71a-9f56-4d42-a495-c0f6894e7733")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.125)
+			)
+		)
+	)
+	(property "Value" "KTT0005B"
+		(at 2.877 0.057 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "c7771171-e506-43b8-9398-dbb4126f9615")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.254)
+			)
+		)
+	)
+	(property "Footprint" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "d8e0bc6e-96c6-428e-b27d-81a36a001606")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "db2da602-523f-42f1-93be-c27bde81c2bb")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "862b6a0a-381e-4d36-b061-7d1218ade525")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start 8.64 -5.08)
+		(end 0.756 -5.08)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "3d612f2b-a02f-4cc2-86d7-041a97b80f97")
+	)
+	(fp_line
+		(start 8.64 5.08)
+		(end 0.756 5.08)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "af23c4bd-95dc-418e-9901-fb0f895ca652")
+	)
+	(fp_line
+		(start 8.64 5.08)
+		(end 8.64 -5.08)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "9f142b80-dfee-4ba0-a4e8-e6ebef6b95c4")
+	)
+	(fp_circle
+		(center 14.551 3.375)
+		(end 14.551 3.501)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(fill none)
+		(layer "F.SilkS")
+		(uuid "73eafdca-4bee-4ab2-9710-7f2ac0dffea1")
+	)
+	(fp_line
+		(start 0 -5.08)
+		(end 8.64 -5.08)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "08edaa78-d6b9-496d-b503-92aad6b1aca3")
+	)
+	(fp_line
+		(start 0 5.08)
+		(end 0 -5.08)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "36804f6a-cd34-4b45-b35c-7e9d0e02282f")
+	)
+	(fp_line
+		(start 8.64 -5.08)
+		(end 8.64 5.08)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "d10bd9a3-efce-4578-a0ec-a2dd578e6fa4")
+	)
+	(fp_line
+		(start 8.64 5.08)
+		(end 0 5.08)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "02787711-93bb-455e-91a3-3b2081561dde")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 2.877 0.057 0)
+		(layer "F.Fab")
+		(uuid "552644a6-64c4-415b-9c0b-82b56a0b7a50")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.254)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at 12.461 3.4 90)
+		(size 1.02 2.16)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "64173086-f949-4e81-b670-7a8fefb8418c")
+	)
+	(pad "2" smd rect
+		(at 12.461 1.7 90)
+		(size 1.02 2.16)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "89b13e43-c520-4b31-9b27-6a58fa667e34")
+	)
+	(pad "3" smd rect
+		(at -0.754 -4.7825 90)
+		(size 1.235 1.91)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "020f92cf-8487-462a-8443-3e8b454a58e4")
+	)
+	(pad "3" smd rect
+		(at -0.754 4.7825 90)
+		(size 1.235 1.91)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "fd54dc31-ded6-4fb7-b873-b1e35c6ffa04")
+	)
+	(pad "3" smd rect
+		(at 1.786 0)
+		(size 6.99 8.33)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "1c5042ce-5994-4186-a35d-8a8e57c79400")
+	)
+	(pad "3" smd rect
+		(at 12.461 0 90)
+		(size 1.02 2.16)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "1517a7d9-b09c-4e18-835f-ab0a3de2365e")
+	)
+	(pad "4" smd rect
+		(at 12.461 -1.7 90)
+		(size 1.02 2.16)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "e9b8056d-0f13-4df9-88ef-c829bc17d377")
+	)
+	(pad "5" smd rect
+		(at 12.461 -3.4 90)
+		(size 1.02 2.16)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "5e13e9a4-e511-4ffc-9572-c404b73f3ab8")
+	)
+	(model "${KIPRJMOD}/部品/LM2577S-ADJ_NOPB/LM2577S-ADJ_NOPB/3D/LM2577S-ADJ_NOPB.stp"
+		(offset
+			(xyz 9 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 -90)
+		)
+	)
+)

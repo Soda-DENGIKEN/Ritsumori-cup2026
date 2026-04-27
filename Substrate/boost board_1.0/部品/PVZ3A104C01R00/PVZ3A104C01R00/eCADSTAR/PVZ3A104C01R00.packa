@@ -1,0 +1,13 @@
+(unit MM)
+
+(package "PVZ3A104C01R00"
+    (type UNDEF)
+    (uver 2)
+    (cuser "SamacSys")
+    (uuser "SamacSys")
+    (utime 2022-09-04-03:21:24)
+    (mountForm default
+        (footprintRef "PVZ3A104C01R00")
+        (spec "System")
+    )
+)

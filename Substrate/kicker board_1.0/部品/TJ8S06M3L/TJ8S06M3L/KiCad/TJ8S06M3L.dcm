@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TJ8S06M3L
+D MOSFET, P-CH, -10V, -8A, TO-252; Transistor Polarity:P Channel; Continuous Drain Current Id:-8A; Drain Source Voltage Vds:-60V; On Resistance Rds(on):0.08ohm; Rds(on) Test Voltage Vgs:-10V; Threshold Voltage Vgs:-3V; Power RoHS Compliant: Yes
+K
+F http://uk.rs-online.com/web/p/products/1712492P
+$ENDCMP
+#
+#End Doc Library

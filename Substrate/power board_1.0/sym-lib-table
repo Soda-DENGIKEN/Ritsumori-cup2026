@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "LM2576SX-3_3_NOPB")(type "KiCad")(uri "${KIPRJMOD}/部品/LIB_LM2576SX-3.3_NOPB/LM2576SX-3.3_NOPB/KiCad/LM2576SX-3_3_NOPB.kicad_sym")(options "")(descr ""))
+  (lib (name "LM2576SX-5_0_NOPB")(type "KiCad")(uri "${KIPRJMOD}/部品/LIB_LM2576SX-5.0_NOPB/LM2576SX-5.0_NOPB/KiCad/LM2576SX-5_0_NOPB.kicad_sym")(options "")(descr ""))
+)

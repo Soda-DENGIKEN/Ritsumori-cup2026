@@ -1,0 +1,17 @@
+.AQW212 :1 ;Solid State Relays - PCB Mount 500MA 60V 8PIN DPST
+DIP762W60P254L978H410Q8N
+*STM K
+*NGS
+*PLB 1="A_1" 2="K_1" 3="A_2" 4="K_2" 5="E_1" 6="C_1" 7="E_2" 8="C_2"
+*MXP 8
+*DFN AQW212
+~!RS Part Number (-)
+~!RS Price/Stock (-)
+~!Manufacturer_Name (Panasonic)
+~!Manufacturer_Part_Number (AQW212)
+~!Allied_Number (70618011)
+~!Link Datasheet (https://datasheet.datasheetarchive.com/originals/distributors/Datasheets-21/DSA-416252.pdf)
+~!Height (4.1mm)
+~!3D_Model (AQW212)
+AQW212
+1.1!U 2.1!U 3.1!U 4.1!U 8.1!U 7.1!U 6.1!U 5.1!U 

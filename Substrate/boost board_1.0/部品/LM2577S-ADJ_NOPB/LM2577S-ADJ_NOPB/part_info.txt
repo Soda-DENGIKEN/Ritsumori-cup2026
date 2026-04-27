@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=LM2577S-ADJ/NOPB
+PartCategory=Integrated Circuit
+PackageCategory=Other
+PinCount=6
+Version=4.6
+Released=2017-05-15 06:55:37
+Downloaded=2025-03-23 07:08:21
+3D=Y

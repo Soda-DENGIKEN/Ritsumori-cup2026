@@ -1,0 +1,11 @@
+FILE_TYPE = MULTI_PHYS_TABLE;
+
+PART 'PVZ3A104C01R00'
+CLASS = DISCRETE
+{========================================================================================}
+:"MANUFACTURER_NAME", "MANUFACTURER_PART_NUMBER"= "PART_NUMBER", "JEDEC_TYPE", "PACK_TYPE", "RS_PART_NUMBER", "RS_PRICE/STOCK", "DESCRIPTION", "DATASHEET", "HEIGHT";
+{========================================================================================}
+ "Murata Electronics", "PVZ3A104C01R00" (!) = "", "PVZ3A104C01R00", "Other", "7250167P", "http://uk.rs-online.com/web/p/products/7250167P", "Murata PVZ3 Series SMD Trimmer Resistor with J-Hook Terminations, 100k +/-30% 1/10W +/-500ppm/C Top Adjust", "http://uk.rs-online.com/web/p/products/7250167P", "1.95 mm"
+END_PART
+
+END.

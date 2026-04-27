@@ -1,0 +1,165 @@
+;Proteus Design Interchange Format
+(PDIF
+ (vendor "SamacSys Limited")
+ (version 1 0)
+ (library
+  (part "TJ8S06M3L"
+   (description "MOSFET, P-CH, -10V, -8A, TO-252; Transistor Polarity:P Channel; Continuous Drain Current Id:-8A; Drain Source Voltage Vds:-60V; On Resistance Rds(on):0.08ohm; Rds(on) Test Voltage Vgs:-10V; Threshold Voltage Vgs:-3V; Power RoHS Compliant: Yes")
+   (family "TRX")
+   (package "TJ8S06M3L")
+   (attribute "Datasheet Link" "http://uk.rs-online.com/web/p/products/1712492P")
+   (attribute "Geometry.Height" "2.7mm")
+   (attribute "RS Part Number" "1712492P")
+   (attribute "RS Price/Stock" "http://uk.rs-online.com/web/p/products/1712492P")
+   (attribute "Manufacturer_Name" "Toshiba")
+   (attribute "Manufacturer_Part_Number" "TJ8S06M3L")
+   (gate
+    (symbol "TJ8S06M3L")
+    (pin "G" 1 PS)
+    (pin "D" 2 PS)
+    (pin "S" 3 PS)
+   )
+  )
+  (symbol "TJ8S06M3L"
+   (units THOU)
+   (origin (pt 0 0))
+   (graphic
+    (stroke 10)
+    (circle (pt 400 100) (pt 100 100))
+   )
+   (graphic
+    (stroke 10)
+    (path (pt 300 100) (pt 300 -100))
+   )
+   (graphic
+    (stroke 10)
+    (path (pt 300 200) (pt 300 300))
+   )
+   (graphic
+    (stroke 10)
+    (path (pt 100 0) (pt 200 0) (pt 200 200))
+   )
+   (graphic
+    (stroke 10)
+    (path (pt 300 100) (pt 230 100))
+   )
+   (graphic
+    (stroke 10)
+    (path (pt 300 200) (pt 230 200))
+   )
+   (graphic
+    (stroke 10)
+    (path (pt 230 0) (pt 300 0))
+   )
+   (graphic
+    (stroke 10)
+    (path (pt 230 220) (pt 230 180))
+   )
+   (graphic
+    (stroke 10)
+    (path (pt 230 -20) (pt 230 20))
+   )
+   (graphic
+    (stroke 10)
+    (path (pt 230 80) (pt 230 120))
+   )
+   (graphic
+    (stroke 10)
+    (path (closed true) (pt 300 100) (pt 260 120) (pt 260 80) (pt 300 100))
+   )
+   (terminal
+    (body (symbol "PINSHORT") (pt 0 0) (rot 0) (mir 0) (visible true))
+    (name (pt 0 -20) (rot 0) (just TOP LEFT) (visible false))
+    (number (pt 80 10) (rot 0) (just BOTTOM RIGHT) (visible true)))
+   (terminal
+    (body (symbol "PINSHORT") (pt 300 400) (rot 90) (mir X) (visible true))
+    (name (pt 0 -20) (rot 90) (just TOP RIGHT) (visible false))
+    (number (pt 0 20) (rot 90) (just TOP LEFT) (visible true)))
+   (terminal
+    (body (symbol "PINSHORT") (pt 300 -200) (rot 90) (mir 0) (visible true))
+    (name (pt 0 -20) (rot 90) (just TOP RIGHT) (visible false))
+    (number (pt 0 20) (rot 90) (just TOP LEFT) (visible true)))
+  )
+  (symbol "PIN"
+   (units THOU)
+   (origin (pt 0 0))
+   (graphic
+    (stroke 10)
+    (path (pt 0 0) (pt 200 0))))
+  (symbol "PINSHORT"
+   (units THOU)
+   (origin (pt 0 0))
+   (graphic
+    (stroke 10)
+    (path (pt 0 0) (pt 100 0))))
+  (package "TJ8S06M3L"
+   (units MM)
+   (layer TASM
+    (graphic
+     (stroke 0.2)
+     (path
+      (closed true)
+      (pt -3.25 3.25)
+      (pt 3.25 3.25)
+      (pt 3.25 -2.25)
+      (pt -3.25 -2.25)
+      (pt -3.25 3.25))))
+   (layer OCCA
+    (graphic
+     (stroke 0.1)
+     (path
+      (closed true)
+      (pt -4.25 7.25)
+      (pt 4.25 7.25)
+      (pt 4.25 -6.7)
+      (pt -4.25 -6.7)
+      (pt -4.25 7.25))))
+   (layer TSLK
+    (graphic
+     (stroke 0.1)
+     (path
+      (closed false)
+      (pt 3.25 3.25)
+      (pt 3.25 -1.5))))
+   (layer TSLK
+    (graphic
+     (stroke 0.1)
+     (path
+      (closed false)
+      (pt -3.25 3.25)
+      (pt -3.25 -1.5))))
+   (layer TSLK
+    (graphic
+     (stroke 0.1)
+     (path
+      (closed false)
+      (pt -1 -2.25)
+      (pt 1 -2.25))))
+   (layer TSLK
+    (graphic
+     (stroke 0.2)
+     (path
+      (closed true)
+      (pt -2.5 -5.5)
+      (arc (pt -2.500 -5.500) (pt -2.600 -5.700) (pt -2.400 -5.500) (start 180.0) (sweep 90.0))
+      (pt -2.5 -5.7)
+      (arc (pt -2.500 -5.700) (pt -2.600 -5.700) (pt -2.400 -5.500) (start 180.0) (sweep -90.0))
+      (pt -2.5 -5.5))))
+   (leg 1 (pt -2.300 -3.250) (padstack 0))
+   (leg 2 (pt 0.000 3.250) (padstack 2))
+   (leg 3 (pt 2.300 -3.250) (padstack 0))
+   (padstack 0
+    (plated false)
+    (pad (layer TCOP) (rectf 1.600 3.000 0 0 90.000))
+   )
+   (padstack 2
+    (plated false)
+    (pad (layer TCOP) (rectf 6.000 6.000 0 0 90.000))
+   )
+   (model "TJ8S06M3L.stp"
+    (euler 0 0 0)
+    (offset 0 0 0)
+   )
+  )
+ )
+)

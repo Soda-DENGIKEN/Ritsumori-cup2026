@@ -1,0 +1,9 @@
+Manufacturer=Toshiba
+PartNumber=TJ8S06M3L
+PartCategory=MOSFET (P-Channel)
+PackageCategory=Other
+PinCount=3
+Version=1.3
+Released=2020-11-04 11:57:58
+Downloaded=2025-03-29 03:52:55
+3D=Y

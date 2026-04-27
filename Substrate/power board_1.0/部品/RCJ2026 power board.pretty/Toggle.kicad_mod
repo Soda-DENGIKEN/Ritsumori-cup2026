@@ -1,0 +1,126 @@
+(footprint "Toggle"
+	(version 20240108)
+	(generator "pcbnew")
+	(generator_version "8.0")
+	(layer "F.Cu")
+	(property "Reference" "SW1"
+		(at 4.85 4.85 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "15b2be26-8bfc-4774-9572-72e09d28007b")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "SW_Push_DPDT"
+		(at -0.5 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "62f16eca-bdfd-4b8f-8526-3b0cb18477c7")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Footprint" ""
+		(at -0.5 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "8a9aa45e-7bc5-4627-86ef-bc1a6b05bab1")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at -0.5 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "5b933d4d-1893-4934-a04e-04e1ccfab86c")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" "Momentary Switch, dual pole double throw"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "eea6843d-c85e-40b9-8bd6-a80413399b75")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(fp_rect
+		(start -6.35 -5.715265)
+		(end 6.350287 5.715)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill none)
+		(layer "F.SilkS")
+		(uuid "1403293f-26a2-4a2e-86bd-904d3885a986")
+	)
+	(pad "1" thru_hole circle
+		(at -4.7 -2.4)
+		(size 2.775 2.775)
+		(drill 1.85)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "c418f93c-dc01-4f7e-a9db-84dff8ff6b69")
+	)
+	(pad "2" thru_hole circle
+		(at 0 -2.4)
+		(size 2.775 2.775)
+		(drill 1.85)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "4c2ac795-13ce-4896-9dd1-a29e3717151e")
+	)
+	(pad "3" thru_hole circle
+		(at 4.7 -2.4)
+		(size 2.775 2.775)
+		(drill 1.85)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "83356e71-e1f1-407f-b014-bf1d2e69c1f0")
+	)
+	(pad "4" thru_hole circle
+		(at -4.7 2.4)
+		(size 2.775 2.775)
+		(drill 1.85)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "bedc1fc1-a901-4c9f-a944-efc6443708e0")
+	)
+	(pad "5" thru_hole circle
+		(at 0 2.4)
+		(size 2.775 2.775)
+		(drill 1.85)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "8849dab1-be95-4834-aea9-d1fff4864666")
+	)
+	(pad "6" thru_hole circle
+		(at 4.7 2.4)
+		(size 2.775 2.775)
+		(drill 1.85)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "5e148d6a-a26e-4157-a21e-02a5361c875a")
+	)
+)

@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LM2576SX-3.3_NOPB
+D Switching Voltage Regulators 3A SD VTG Reg
+K
+F http://www.ti.com/lit/gpn/lm2576
+$ENDCMP
+#
+#End Doc Library

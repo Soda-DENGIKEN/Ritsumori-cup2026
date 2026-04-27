@@ -1,0 +1,9 @@
+Manufacturer=Vishay
+PartNumber=1N5822-23
+PartCategory=Schottky Diode
+PackageCategory=Diodes, Axial Diameter Horizontal Mounting
+PinCount=2
+Version=1.1
+Released=2021-10-15 22:30:44
+Downloaded=2025-03-10 05:54:49
+3D=Y

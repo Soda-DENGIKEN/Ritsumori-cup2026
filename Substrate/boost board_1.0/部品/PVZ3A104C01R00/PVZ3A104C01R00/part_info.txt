@@ -1,0 +1,9 @@
+Manufacturer=Murata Electronics
+PartNumber=PVZ3A104C01R00
+PartCategory=Variable Resistor
+PackageCategory=Other
+PinCount=3
+Version=2.5
+Released=2017-07-17 15:26:29
+Downloaded=2025-03-28 10:31:14
+3D=Y

@@ -1,0 +1,11 @@
+FILE_TYPE = MULTI_PHYS_TABLE;
+
+PART 'AQW212'
+CLASS = DISCRETE
+{========================================================================================}
+:"MANUFACTURER_NAME", "MANUFACTURER_PART_NUMBER"= "PART_NUMBER", "JEDEC_TYPE", "PACK_TYPE", "RS_PART_NUMBER", "RS_PRICE/STOCK", "ALLIED_NUMBER", "DESCRIPTION", "DATASHEET", "HEIGHT";
+{========================================================================================}
+ "Panasonic", "AQW212" (!) = "", "DIP762W60P254L978H410Q8N", "Dual-In-Line Packages", "", "", "70618011", "Solid State Relays - PCB Mount 500MA 60V 8PIN DPST", "https://datasheet.datasheetarchive.com/originals/distributors/Datasheets-21/DSA-416252.pdf", "4.1 mm"
+END_PART
+
+END.

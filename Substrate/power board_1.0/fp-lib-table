@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "RCJ2026 power board")(type "KiCad")(uri "${KIPRJMOD}/部品/RCJ2026 power board.pretty")(options "")(descr ""))
+)

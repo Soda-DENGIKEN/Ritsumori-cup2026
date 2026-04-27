@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=LM2576SX-5.0/NOPB
+PartCategory=Integrated Circuit
+PackageCategory=Other
+PinCount=6
+Version=1.6
+Released=2017-12-18 10:52:13
+Downloaded=2025-03-10 05:05:53
+3D=Y

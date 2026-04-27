@@ -1,0 +1,13 @@
+(unit MM)
+
+(package "DRV8432DKDR"
+    (type UNDEF)
+    (uver 2)
+    (cuser "SamacSys")
+    (uuser "SamacSys")
+    (utime 2022-06-25-10:05:24)
+    (mountForm default
+        (footprintRef "SOP65P1420X360-37N")
+        (spec "System")
+    )
+)

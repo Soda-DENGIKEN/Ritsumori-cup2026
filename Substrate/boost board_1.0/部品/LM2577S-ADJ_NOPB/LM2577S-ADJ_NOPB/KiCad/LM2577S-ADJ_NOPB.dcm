@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LM2577S-ADJ_NOPB
+D DC-DC Converter Step Up 3.5-40V TO263-6 Texas Instruments LM2577S-ADJ/NOPB, Step Up DC-DC Converter, 3A, Adjustable, 1.23  12 V, 5-Pin TO-263
+K
+F http://uk.rs-online.com/web/p/products/7615505P
+$ENDCMP
+#
+#End Doc Library

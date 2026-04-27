@@ -1,0 +1,16 @@
+.TJ8S06M3L :1 ;MOSFET, P-CH, -10V, -8A, TO-252; Transistor Polarity:P Channel; Continuous Drain Current Id:-8A; Drain Source Voltage Vds:-60V; On Resistance Rds(on):0.08ohm; Rds(on) Test Voltage Vgs:-10V; Threshold Voltage Vgs:-3V; Power RoHS Compliant: Yes
+TJ8S06M3L
+*STM Q
+*NGS
+*PLB 1="G" 2="D" 3="S"
+*MXP 3
+*DFN TJ8S06M3L
+~!RS Part Number (1712492P)
+~!Link RS Price/Stock (http://uk.rs-online.com/web/p/products/1712492P)
+~!Manufacturer_Name (Toshiba)
+~!Manufacturer_Part_Number (TJ8S06M3L)
+~!Link Datasheet (http://uk.rs-online.com/web/p/products/1712492P)
+~!Height (2.7mm)
+~!3D_Model (TJ8S06M3L)
+TJ8S06M3L
+1.1!U 2.1!U 3.1!U 

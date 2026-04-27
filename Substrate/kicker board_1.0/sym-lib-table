@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "AQW212")(type "KiCad")(uri "${KIPRJMOD}/部品/AQW212/AQW212/KiCad/AQW212.kicad_sym")(options "")(descr ""))
+  (lib (name "TJ8S06M3L")(type "KiCad")(uri "${KIPRJMOD}/部品/TJ8S06M3L/TJ8S06M3L/KiCad/TJ8S06M3L.kicad_sym")(options "")(descr ""))
+)
