@@ -1,0 +1,18 @@
+Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
+C1,0.1u,C_0603_1608Metric,54.0,-35.5,-90.0,top
+C2,4.7u,C_0603_1608Metric,56.0,-35.5,-90.0,top
+C3,0.1u,C_0603_1608Metric,52.5,-43.5,90.0,top
+C4,1u,C_0603_1608Metric,54.5,-43.5,90.0,top
+C5,0.1u,C_0603_1608Metric,41.25,-33.75,180.0,top
+C6,4.7u,C_0603_1608Metric,65.5,-51.5,-90.0,top
+C7,0.1u,C_0603_1608Metric,67.25,-51.5,-90.0,top
+C8,0.1u,C_0603_1608Metric,71.0,-38.75,0.0,top
+C9,0.1u,C_0603_1608Metric,60.75,-51.0,0.0,top
+IC1,STM32F446RET6,LQFP-64_10x10mm_P0.5mm,62.5,-42.5,0.0,top
+J1,main_PC,PinHeader_1x07_P2.54mm_Vertical,67.7,-32.5,90.0,top
+J2,Conn_02x10_Odd_Even,PinHeader_2x10_P2.54mm_Vertical,80.13,-50.0,0.0,bottom
+J3,Conn_02x10_Odd_Even,IDC-Header_2x10_P2.54mm_Vertical,89.27,-50.0,0.0,top
+J5,Conn_01x04_Pin,PinSocket_1x04_P2.54mm_Vertical,62.31,-66.0,90.0,top
+J6,Conn_01x04_Pin,PinSocket_1x04_P2.54mm_Vertical,62.31,-58.38,90.0,top
+R1,10k,R_0603_1608Metric,52.0,-38.5,-90.0,top
+SW1,SW_Push,SKRPABE010,39.0,-40.0,90.0,top

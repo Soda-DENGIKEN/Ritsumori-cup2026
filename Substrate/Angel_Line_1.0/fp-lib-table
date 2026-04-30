@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "RCJ2026 Angel_Line")(type "KiCad")(uri "${KIPRJMOD}/RCJ2026 Angel_Line.pretty")(options "")(descr ""))
+)

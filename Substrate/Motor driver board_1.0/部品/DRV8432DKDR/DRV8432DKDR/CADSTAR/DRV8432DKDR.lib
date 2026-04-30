@@ -1,0 +1,16 @@
+.DRV8432DKDR :1 ;12A Dual Brushed DC or Single Bipolar Stepper Motor Driver (PWM Ctrl)
+SOP65P1420X360-37N
+*STM IC
+*NGS
+*PLB 1="GVDD_B" 2="'OTW'" 3="'FAULT'" 4="PWM_A" 5="'RESET_AB'" 6="PWM_B" 7="OC_ADJ" 8="GND" 9="AGND" 10="VREG" 11="M3" 12="M2" 13="M1" 14="PWM_C" 15="'RESET_CD'" 16="PWM_D" 17="VDD" 18="GVDD_C" 19="GVDD_D" 20="BST_D" 21="PVDD_D" 22="OUT_D" 23="GND_D" 24="GND_C" 25="OUT_C" 26="PVDD_C" 27="BST_C" 28="BST_B" 29="PVDD_B" 30="OUT_B" 31="GND_B" 32="GND_A" 33="OUT_A" 34="PVDD_A" 35="BST_A" 36="GVDD_A" 37="EP"
+*MXP 37
+*DFN DRV8432DKDR
+~!RS Part Number (-)
+~!RS Price/Stock (-)
+~!Manufacturer_Name (Texas Instruments)
+~!Manufacturer_Part_Number (DRV8432DKDR)
+~!Link Datasheet (http://www.ti.com/lit/gpn/drv8432)
+~!Height (3.6mm)
+~!3D_Model (DRV8432DKDR)
+DRV8432DKDR
+1.1!U 2.1!U 3.1!U 4.1!U 5.1!U 6.1!U 7.1!U 8.1!U 9.1!U 10.1!U 11.1!U 12.1!U 13.1!U 14.1!U 15.1!U 16.1!U 17.1!U 18.1!U 37.1!U 36.1!U 35.1!U 34.1!U 33.1!U 32.1!U 31.1!U 30.1!U 29.1!U 28.1!U 27.1!U 26.1!U 25.1!U 24.1!U 23.1!U 22.1!U 21.1!U 20.1!U 19.1!U 

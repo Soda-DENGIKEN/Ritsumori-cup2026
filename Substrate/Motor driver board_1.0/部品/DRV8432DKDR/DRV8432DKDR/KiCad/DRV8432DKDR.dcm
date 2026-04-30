@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DRV8432DKDR
+D 12A Dual Brushed DC or Single Bipolar Stepper Motor Driver (PWM Ctrl)
+K
+F http://www.ti.com/lit/gpn/drv8432
+$ENDCMP
+#
+#End Doc Library

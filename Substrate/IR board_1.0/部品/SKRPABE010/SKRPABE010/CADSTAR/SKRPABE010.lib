@@ -1,0 +1,16 @@
+.SKRPABE010 :1 ;Switch Tactile N.O. SPST Button J-Bend 0.05A 16VDC 1.57N SMD Automotive T/R
+SKRPABE010
+*STM S
+*NGS
+*PLB 1="1" 2="2" 3="3" 4="4"
+*MXP 4
+*DFN SKRPABE010
+~!RS Part Number (9174087)
+~!Link RS Price/Stock (http://uk.rs-online.com/web/p/products/9174087)
+~!Manufacturer_Name (ALPS Electric)
+~!Manufacturer_Part_Number (SKRPABE010)
+~!Link Datasheet (http://uk.rs-online.com/web/p/products/9174087)
+~!Height (2.5mm)
+~!3D_Model (SKRPABE010)
+SKRPABE010
+1.1!U 2.1!U 3.1!U 4.1!U 

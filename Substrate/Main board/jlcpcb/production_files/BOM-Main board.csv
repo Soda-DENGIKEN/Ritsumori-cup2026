@@ -1,0 +1,13 @@
+Comment,Designator,Footprint,LCSC,Quantity
+0.1u,"C1,C3,C5,C7,C8,C9",C_0603_1608Metric,C14663,6
+10k,R1,R_0603_1608Metric,C25804,1
+1u,C4,C_0603_1608Metric,C15849,1
+4.7u,C2,C_0603_1608Metric,C19666,1
+4.7u,C6,C_0603_1608Metric,C59461,1
+STM32F446RET6,IC1,LQFP-64_10x10mm_P0.5mm,C69336,1
+Conn_02x10_Odd_Even,J3,IDC-Header_2x10_P2.54mm_Vertical,,1
+main_PC,J1,PinHeader_1x07_P2.54mm_Vertical,,1
+SW_Push,SW1,SKRPABE010,,1
+Conn_01x04_Pin,J6,PinSocket_1x04_P2.54mm_Vertical,,1
+Conn_01x04_Pin,J5,PinSocket_1x04_P2.54mm_Vertical,,1
+Conn_02x10_Odd_Even,J2,PinHeader_2x10_P2.54mm_Vertical,,1

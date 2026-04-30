@@ -1,0 +1,11 @@
+FILE_TYPE = MULTI_PHYS_TABLE;
+
+PART 'DRV8432DKDR'
+CLASS = IC
+{========================================================================================}
+:"MANUFACTURER_NAME", "MANUFACTURER_PART_NUMBER"= "PART_NUMBER", "JEDEC_TYPE", "PACK_TYPE", "RS_PART_NUMBER", "RS_PRICE/STOCK", "DESCRIPTION", "DATASHEET", "HEIGHT", "TJ", "MTBF", "POWER", "SLOPE", "SUBTYPE", "PACKAGE", "RJA", "VCC_MAX", "VCC_MIN", "IOUT_MAX", "IOUT_MIN", "ICC", "IGND", "RCA", "RJC", "ICCQ", "TECHNOLOGY", "PVDD_A", "PVDD_B", "PVDD_C", "PVDD_D", "GND_A", "BST_A", "BST_B", "BST_C", "BST_D", "VREG", "PWM_A", "PWM_B", "PWM_C", "PWM_D", "RDS";
+{========================================================================================}
+ "Texas Instruments", "DRV8432DKDR" (!) = "", "SOP65P1420X360-37N", "Small Outline Packages", "", "", "12A Dual Brushed DC or Single Bipolar Stepper Motor Driver (PWM Ctrl)", "http://www.ti.com/lit/gpn/drv8432", "3.6 mm", "150", "", "", "", "PWM MOTOR DRIVER SMD", "HSSOP-36", "13.3", "13.2", "-0.3", "9m", "", "12m", "", "", "0.4", "", "CMOS", "70", "70", "70", "70", "-0.3", "80", "80", "80", "80", "4.2", "4.7", "4.7", "4.7", "4.7", "110m"
+END_PART
+
+END.

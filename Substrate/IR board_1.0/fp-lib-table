@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "RCJ2026 IR board")(type "KiCad")(uri "${KIPRJMOD}/RCJ2026 IR board.pretty")(options "")(descr ""))
+)

@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "DRV8432DKDR")(type "KiCad")(uri "${KIPRJMOD}/部品/DRV8432DKDR/DRV8432DKDR/KiCad/DRV8432DKDR.kicad_sym")(options "")(descr ""))
+)

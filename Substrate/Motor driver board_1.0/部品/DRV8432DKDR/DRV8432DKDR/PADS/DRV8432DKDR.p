@@ -1,0 +1,54 @@
+*PADS-LIBRARY-PART-TYPES-V9*
+
+DRV8432DKDR SOP65P1420X360-37N I ANA 7 1 0 0 0
+TIMESTAMP 2025.03.13.08.08.53
+"RS Part Number" 
+"RS Price/Stock" 
+"Manufacturer_Name" Texas Instruments
+"Manufacturer_Part_Number" DRV8432DKDR
+"Description" 12A Dual Brushed DC or Single Bipolar Stepper Motor Driver (PWM Ctrl)
+"Datasheet Link" http://www.ti.com/lit/gpn/drv8432
+"Geometry.Height" 3.6mm
+GATE 1 37 0
+DRV8432DKDR
+1 0 U GVDD_B
+2 0 U \OTW
+3 0 U \FAULT
+4 0 U PWM_A
+5 0 U \RESET_AB
+6 0 U PWM_B
+7 0 U OC_ADJ
+8 0 U GND
+9 0 U AGND
+10 0 U VREG
+11 0 U M3
+12 0 U M2
+13 0 U M1
+14 0 U PWM_C
+15 0 U \RESET_CD
+16 0 U PWM_D
+17 0 U VDD
+18 0 U GVDD_C
+37 0 U EP
+36 0 U GVDD_A
+35 0 U BST_A
+34 0 U PVDD_A
+33 0 U OUT_A
+32 0 U GND_A
+31 0 U GND_B
+30 0 U OUT_B
+29 0 U PVDD_B
+28 0 U BST_B
+27 0 U BST_C
+26 0 U PVDD_C
+25 0 U OUT_C
+24 0 U GND_C
+23 0 U GND_D
+22 0 U OUT_D
+21 0 U PVDD_D
+20 0 U BST_D
+19 0 U GVDD_D
+
+*END*
+*REMARK* SamacSys ECAD Model
+379743/1590527/2.50/37/3/Integrated Circuit
