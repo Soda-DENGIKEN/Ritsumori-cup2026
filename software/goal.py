@@ -3,16 +3,16 @@ from machine import UART
 from fpioa_manager import fm
 
 # ============================================================
-# ★ 設定（ここだけ変えればミラーあり/なし切り替え可能）
+# ★ 設定
 # ============================================================
-USE_MIRROR = False        # 双曲線ミラーあり: True / なし: False
+USE_MIRROR     = False   # True: ミラーあり / False: 通常カメラ
+MIRROR_INNER_R = 30
+MIRROR_OUTER_R = 110
+SMOOTH         = 0.4     # 角度の平滑化係数（0〜1）
 
-MIRROR_INNER_R = 30      # 中心から除外する半径（鏡面反射対策）
-MIRROR_OUTER_R = 110     # 有効範囲の外半径
-
-NORMAL_ROI = (0, 60, 320, 180)  # 通常カメラ時のROI（上下端カット）
-
-SMOOTH = 0.4  # 角度の平滑化係数（0〜1: 小さいほど滑らか・遅延大）
+# ★ デバッグ設定（それぞれ個別にオン/オフ可能）
+DEBUG_LCD   = True  # True: LCD表示・描画をオン
+DEBUG_PRINT = True  # True: PCへのprint出力をオン
 
 # ============================================================
 # UART ピン設定
@@ -32,17 +32,17 @@ sensor.set_vflip(False)
 sensor.skip_frames(time=2000)
 clock = time.clock()
 
-YELLOW_T = (30, 80, -20,  0,  28,  78)
-BLUE_T   = ( 0, 60, -10, 50, -127, -20)
-IMG_CX   = 160
-IMG_CY   = 120
+YELLOW_T = (30,  80, -20,   0,  28,  78)
+BLUE_T   = ( 0,  60, -10,  50, -127, -20)
+
+IMG_CX = 160
+IMG_CY = 120
 
 y_smooth = None
 b_smooth = None
 
 
 def in_mirror_roi(blob):
-    """ミラーモード: 中心から適切な距離にあるブロブだけ通す"""
     dx = blob.cx() - IMG_CX
     dy = blob.cy() - IMG_CY
     r = math.sqrt(dx * dx + dy * dy)
@@ -51,33 +51,50 @@ def in_mirror_roi(blob):
 
 def calc_angle(blob):
     dx = blob.cx() - IMG_CX
-    dy = IMG_CY - blob.cy()  # 上が正
+    dy = IMG_CY - blob.cy()
     return math.degrees(math.atan2(dx, dy))
 
 
+def calc_distance(blob):
+    dx = blob.cx() - IMG_CX
+    dy = blob.cy() - IMG_CY
+    return math.sqrt(dx * dx + dy * dy)
+
+
 def smooth_angle(prev, new_val):
-    """EMA平滑化（±180折り返しを考慮）"""
     if prev is None:
         return new_val
     diff = new_val - prev
-    if diff > 180:
-        diff -= 360
-    elif diff < -180:
-        diff += 360
+    if diff >  180: diff -= 360
+    if diff < -180: diff += 360
     return prev + SMOOTH * diff
 
 
-def angle_to_bytes(angle):
-    v = max(-32768, min(32767, int(angle)))
-    if v < 0:
-        v += 65536
+def val_to_bytes(val, signed=True):
+    if signed:
+        v = max(-32768, min(32767, int(val)))
+        if v < 0: v += 65536
+    else:
+        v = max(0, min(65534, int(val)))
     return bytes([(v >> 8) & 0xFF, v & 0xFF])
 
 
-def send_packet(y_angle, b_angle):
-    y_b = angle_to_bytes(y_angle) if y_angle is not None else b'\x7f\xff'
-    b_b = angle_to_bytes(b_angle) if b_angle is not None else b'\x7f\xff'
-    uart.write(b'\xaa' + y_b + b_b + b'\xff')
+NOT_DET = b'\x7f\xff'
+
+
+def send_packet(y_ang, y_dist, b_ang, b_dist):
+    """
+    10バイトパケット:
+    AA [Y角度×2] [Y距離×2] [B角度×2] [B距離×2] FF
+    未検出は 0x7FFF
+    """
+    pkt = (b'\xaa'
+           + (val_to_bytes(y_ang)         if y_ang  is not None else NOT_DET)
+           + (val_to_bytes(y_dist, False)  if y_dist is not None else NOT_DET)
+           + (val_to_bytes(b_ang)         if b_ang  is not None else NOT_DET)
+           + (val_to_bytes(b_dist, False)  if b_dist is not None else NOT_DET)
+           + b'\xff')
+    uart.write(pkt)
 
 
 while True:
@@ -86,67 +103,54 @@ while True:
 
     # --- ブロブ検出 ---
     if USE_MIRROR:
-        # ミラーモード: 全体検索 → ROIフィルタで絞る
-        blobs = img.find_blobs(
-            [YELLOW_T, BLUE_T],
-            pixels_threshold=150,
-            area_threshold=150,
-            merge=True,
-            margin=5
-        )
-        blobs = [b for b in blobs if in_mirror_roi(b)]
+        y_blobs = [b for b in img.find_blobs([YELLOW_T], pixels_threshold=150, area_threshold=150, merge=True, margin=5) if in_mirror_roi(b)]
+        b_blobs = [b for b in img.find_blobs([BLUE_T],   pixels_threshold=150, area_threshold=150, merge=True, margin=5) if in_mirror_roi(b)]
     else:
-        # 通常カメラモード: ROIで検索範囲を絞る（FPS向上）
-        blobs = img.find_blobs(
-            [YELLOW_T, BLUE_T],
-            roi=NORMAL_ROI,
-            pixels_threshold=200,
-            area_threshold=200,
-            merge=True,
-            margin=5
-        )
+        y_blobs = img.find_blobs([YELLOW_T], pixels_threshold=200, area_threshold=200, merge=True, margin=5)
+        b_blobs = img.find_blobs([BLUE_T],   pixels_threshold=200, area_threshold=200, merge=True, margin=5)
 
-    yg = max([b for b in blobs if b.code() & 1],
-             key=lambda b: b.area(), default=None)
-    bg = max([b for b in blobs if b.code() & 2],
-             key=lambda b: b.area(), default=None)
+    yg = max(y_blobs, key=lambda b: b.area(), default=None)
+    bg = max(b_blobs, key=lambda b: b.area(), default=None)
 
-    # 角度計算 + 平滑化
-    y_raw = calc_angle(yg) if yg else None
-    b_raw = calc_angle(bg) if bg else None
+    # --- 角度・距離計算 ---
+    y_raw = calc_angle(yg)    if yg else None
+    b_raw = calc_angle(bg)    if bg else None
     y_smooth = smooth_angle(y_smooth, y_raw) if y_raw is not None else None
     b_smooth = smooth_angle(b_smooth, b_raw) if b_raw is not None else None
 
-    # UART送信（STM32へ）
-    send_packet(y_smooth, b_smooth)
+    y_dist = calc_distance(yg) if yg else None
+    b_dist = calc_distance(bg) if bg else None
 
-    # 画面中心マーク
-    img.draw_cross(IMG_CX, IMG_CY, color=(255, 255, 255), size=10)
+    # --- UART送信（STM32へ）---
+    send_packet(y_smooth, y_dist, b_smooth, b_dist)
 
-    # ミラーモード時: 有効範囲を円で表示
-    if USE_MIRROR:
-        img.draw_circle(IMG_CX, IMG_CY, MIRROR_INNER_R, color=(100, 100, 100))
-        img.draw_circle(IMG_CX, IMG_CY, MIRROR_OUTER_R, color=(100, 100, 100))
+    # --- LCD表示・描画（DEBUG_LCD = True のとき）---
+    if DEBUG_LCD:
+        img.draw_cross(IMG_CX, IMG_CY, color=(255, 255, 255), size=10)
 
-    # 描画
-    if yg:
-        img.draw_rectangle(yg.rect(), color=(255, 200, 0))
-        img.draw_line(IMG_CX, IMG_CY, yg.cx(), yg.cy(),
-                      color=(255, 200, 0), thickness=2)
-        img.draw_string(yg.x(), yg.y() - 10,
-                        "Y:%.0f" % y_smooth, color=(255, 200, 0))
-    if bg:
-        img.draw_rectangle(bg.rect(), color=(0, 80, 255))
-        img.draw_line(IMG_CX, IMG_CY, bg.cx(), bg.cy(),
-                      color=(0, 80, 255), thickness=2)
-        img.draw_string(bg.x(), bg.y() - 10,
-                        "B:%.0f" % b_smooth, color=(0, 80, 255))
+        if USE_MIRROR:
+            img.draw_circle(IMG_CX, IMG_CY, MIRROR_INNER_R, color=(100, 100, 100))
+            img.draw_circle(IMG_CX, IMG_CY, MIRROR_OUTER_R, color=(100, 100, 100))
 
-    # USB送信（PCへ）
-    print("Y:%-7s B:%-7s fps:%.1f" % (
-        "%.0f" % y_smooth if y_smooth is not None else "NONE",
-        "%.0f" % b_smooth if b_smooth is not None else "NONE",
-        clock.fps()
-    ))
+        if yg:
+            img.draw_rectangle(yg.rect(), color=(255, 200, 0))
+            img.draw_line(IMG_CX, IMG_CY, yg.cx(), yg.cy(), color=(255, 200, 0), thickness=2)
+            img.draw_string(yg.x(), yg.y() - 10,
+                            "Y:%.0f d:%.0f" % (y_smooth, y_dist), color=(255, 200, 0))
+        if bg:
+            img.draw_rectangle(bg.rect(), color=(0, 80, 255))
+            img.draw_line(IMG_CX, IMG_CY, bg.cx(), bg.cy(), color=(0, 80, 255), thickness=2)
+            img.draw_string(bg.x(), bg.y() - 10,
+                            "B:%.0f d:%.0f" % (b_smooth, b_dist), color=(0, 80, 255))
 
-    lcd.display(img)
+        lcd.display(img)
+
+    # --- PCへのprint出力（DEBUG_PRINT = True のとき）---
+    if DEBUG_PRINT:
+        print("Y:%-6s(d:%-5s) B:%-6s(d:%-5s) fps:%.1f" % (
+            "%.0f" % y_smooth if y_smooth is not None else "NONE",
+            "%.0f" % y_dist   if y_dist  is not None else "-",
+            "%.0f" % b_smooth if b_smooth is not None else "NONE",
+            "%.0f" % b_dist   if b_dist  is not None else "-",
+            clock.fps()
+        ))
