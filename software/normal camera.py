@@ -32,18 +32,31 @@ uart = UART(UART.UART1, 115200, read_buf_len=0)
 # ============================================================
 lcd.init(freq=15000000)
 sensor.reset()
+
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
+
 sensor.set_vflip(False)
 sensor.set_hmirror(False)
+
+sensor.set_auto_gain(True)
+sensor.set_auto_whitebal(True)
+sensor.set_auto_exposure(True)
+
+sensor.set_contrast(2)
+sensor.set_saturation(2)
+
 sensor.skip_frames(time=2000)
+
+print("GAIN =", sensor.get_gain_db())
+print("WB =", sensor.get_rgb_gain_db())
 clock = time.clock()
 
 YELLOW_T = (65, 100,  -5,   8,  20, 100)
 BLUE_T   = (0, 60, -15, 60, -128, -17)
 
-IMG_CX = 120
-IMG_CY = 160
+IMG_CX = 160
+IMG_CY = 120
 
 y_smooth = None
 b_smooth = None
