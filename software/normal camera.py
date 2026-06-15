@@ -73,9 +73,7 @@ def calc_distance(blob):
 
 def calc_angle_from_y(y):
     dy = IMG_CY - y
-
-    return dy / IMG_CY * 90.0
-
+    return dy / IMG_CY * 40.0
 def smooth_angle(prev, new_val):
     if prev is None:
         return new_val
