@@ -16,7 +16,7 @@ MIRROR_OUTER_R = 110
 SMOOTH         = 0.4     # 角度の平滑化係数（0〜1）
 
 # ★ デバッグ設定（それぞれ個別にオン/オフ可能）
-DEBUG_LCD   = True  # True: LCD表示・描画をオン
+DEBUG_LCD   = False  # True: LCD表示・描画をオン
 DEBUG_PRINT = True  # True: PCへのprint出力をオン
 
 # ============================================================
@@ -48,8 +48,6 @@ sensor.set_saturation(2)
 
 sensor.skip_frames(time=2000)
 
-print("GAIN =", sensor.get_gain_db())
-print("WB =", sensor.get_rgb_gain_db())
 clock = time.clock()
 
 YELLOW_T = (65, 100,  -5,   8,  20, 100)
@@ -73,42 +71,10 @@ def calc_distance(blob):
 
     return math.sqrt(dx * dx + dy * dy)
 
-def calc_angle_from_x(x):
-    dx = x - IMG_CX
-    return dx / IMG_CX * 90.0
+def calc_angle_from_y(y):
+    dy = IMG_CY - y
 
-def find_open_x(img, blob, threshold):
-
-    width = blob.w() / 8.0
-
-    best_score = -1
-    best_x = blob.cx()
-
-    for i in range(8):
-
-        x = int(blob.x() + width * (i + 0.5))
-        score = 0
-
-        for j in range(20):
-
-            y = int(blob.y() + blob.h()
-                    - (blob.h() / 20.0) * j)
-
-            try:
-                p = image.rgb_to_lab(img.get_pixel(x, y))
-
-                if threshold[4] < p[2] < threshold[5]:
-                    score += 1
-
-            except:
-                pass
-
-        if score > best_score:
-            best_score = score
-            best_x = x
-
-    return best_x
-
+    return dy / IMG_CY * 90.0
 
 def smooth_angle(prev, new_val):
     if prev is None:
@@ -149,7 +115,9 @@ def send_packet(y_ang, y_dist, b_ang, b_dist):
 while True:
     clock.tick()
     img = sensor.snapshot()
-    img = img.rotation_corr(z_rotation=90)
+
+    if DEBUG_LCD:
+        img = img.rotation_corr(z_rotation=90)
 
     # --- ブロブ検出 ---
 
@@ -165,23 +133,19 @@ while True:
 
     # --- 黄色 ---
     if yg:
-        y_aim_x = find_open_x(img, yg, YELLOW_T)
-        y_raw = calc_angle_from_x(y_aim_x)
+        y_raw = calc_angle_from_y(yg.cy())
         y_smooth = smooth_angle(y_smooth, y_raw)
         y_dist = calc_distance(yg)
     else:
-        y_aim_x = None
         y_smooth = None
         y_dist = None
 
     # --- 青 ---
     if bg:
-        b_aim_x = find_open_x(img, bg, BLUE_T)
-        b_raw = calc_angle_from_x(b_aim_x)
+        b_raw = calc_angle_from_y(bg.cy())
         b_smooth = smooth_angle(b_smooth, b_raw)
         b_dist = calc_distance(bg)
     else:
-        b_aim_x = None
         b_smooth = None
         b_dist = None
 
@@ -192,6 +156,16 @@ while True:
         b_smooth,
         b_dist
     )
+
+    if DEBUG_PRINT:
+        print(
+            "Y_ang={} Y_dist={} B_ang={} B_dist={}".format(
+                int(y_smooth) if y_smooth is not None else -1,
+                int(y_dist) if y_dist is not None else -1,
+                int(b_smooth) if b_smooth is not None else -1,
+                int(b_dist) if b_dist is not None else -1
+            )
+        )
 
     # --- LCD表示・描画（DEBUG_LCD = True のとき）---
     if DEBUG_LCD:
@@ -204,7 +178,7 @@ while True:
         if yg:
             img.draw_rectangle(yg.rect(), color=(255, 200, 0))
             img.draw_cross(
-                y_aim_x,
+                yg.cx(),
                 yg.cy(),
                 color=(255,0,0),
                 size=8
@@ -213,7 +187,7 @@ while True:
             img.draw_line(
                 IMG_CX,
                 IMG_CY,
-                y_aim_x,
+                yg.cx(),
                 yg.cy(),
                 color=(255,0,0),
                 thickness=2
@@ -226,15 +200,16 @@ while True:
 
             img.draw_rectangle(bg.rect(), color=(0, 80, 255))
             img.draw_cross(
-                b_aim_x,
+                bg.cx(),
                 bg.cy(),
                 color=(255,0,0),
                 size=8
             )
+
             img.draw_line(
                 IMG_CX,
                 IMG_CY,
-                b_aim_x,
+                bg.cx(),
                 bg.cy(),
                 color=(255,0,0),
                 thickness=2
@@ -246,17 +221,3 @@ while True:
 
 
         lcd.display(img)
-
-
-
-    # --- PCへのprint出力（DEBUG_PRINT = True のとき）---
-
-    if DEBUG_PRINT:
-
-        print("Y:%-6s(d:%-5s) B:%-6s(d:%-5s) fps:%.1f" % (
-            "%.0f" % y_smooth if y_smooth is not None else "NONE",
-            "%.0f" % y_dist   if y_dist  is not None else "-",
-            "%.0f" % b_smooth if b_smooth is not None else "NONE",
-            "%.0f" % b_dist   if b_dist  is not None else "-",
-            clock.fps()
-        ))
