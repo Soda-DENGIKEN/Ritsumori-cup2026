@@ -114,8 +114,8 @@ while True:
     clock.tick()
     img = sensor.snapshot()
 
-    if DEBUG_LCD:
-        img = img.rotation_corr(z_rotation=90)
+    #if DEBUG_LCD:
+    #   img = img.rotation_corr(z_rotation=90)
 
     # --- ブロブ検出 ---
 
