@@ -1,2 +1,0 @@
-../Core/Src/motor.c:13:6:Omni_Drive	64	static
-../Core/Src/motor.c:34:6:SetMotorSpeed	32	static
