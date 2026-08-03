@@ -11,6 +11,7 @@ extern I2C_HandleTypeDef  hi2c2;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart2;
+extern volatile uint8_t  line_detected_count; // 💡 追加：センサーの反応個数を参照
 
 #define BNO055_ADDR      (0x28 << 1)
 #define BNO055_OPR_MODE  0x3D
@@ -76,7 +77,8 @@ static float   line_angle_base  = 0.0f;
 static uint8_t line_valid_prev  = 0;
 
 // ---- BNO055 ----
-volatile float yaw_offset   = 0.0f;
+volatile float   yaw_offset   = 0.0f;
+volatile uint8_t bno_online   = 1;    // 💡 新設：ジャイロが正常通信できているかのフラグ
 
 // ---- PID ----
 static float pid_integral = 0.0f;
@@ -153,7 +155,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     // ラインセンサー（USART2）
     if (huart->Instance == USART2)
     {
-        line_packet_count++; // 割り込みに入った総合回数
+        line_packet_count++;
 
         uint16_t next = (line_rx_head + 1) % UART_BUF_SIZE;
         if (next != line_rx_tail)
@@ -196,45 +198,49 @@ void Sensor_Update(void)
         }
     }
 
-    // ---- ラインセンサーの解析 (診断カウンター付きスライド窓パース) ----
+    // ---- ラインセンサーの解析 ----
+    uint16_t data_len = (line_rx_head + UART_BUF_SIZE - line_rx_tail) % UART_BUF_SIZE;
+
+    // 💡 改良版ゴミ箱システム：パケットが3パック以上（27バイト以上）溜まっている場合
+    if (data_len >= LINE_PKT_SIZE * 3)
+    {
+        // 最新の1パック（9バイト）だけを残し、読み込み位置（tail）を一瞬でワープさせて古いデータを全破棄！
+        line_rx_tail = (line_rx_head + UART_BUF_SIZE - LINE_PKT_SIZE) % UART_BUF_SIZE;
+    }
+
     while (((line_rx_head + UART_BUF_SIZE - line_rx_tail) % UART_BUF_SIZE) >= LINE_PKT_SIZE)
     {
         uint16_t t_idx = line_rx_tail;
 
-        // 1. 先頭がヘッダー(0xFF)かチェック
         if (line_rx_buf[t_idx] != LINE_PKT_HEADER)
         {
-            debug_err_header++; // ヘッダーエラーをカウント
+            debug_err_header++;
             line_rx_tail = (line_rx_tail + 1) % UART_BUF_SIZE;
             continue;
         }
 
-        // 9バイト分を一時配列へコピー
         uint8_t work_pkt[LINE_PKT_SIZE];
         for (int i = 0; i < LINE_PKT_SIZE; i++)
         {
             work_pkt[i] = line_rx_buf[(line_rx_tail + i) % UART_BUF_SIZE];
         }
 
-        // 2. 末尾がフッター(0xFE)かチェック
         if (work_pkt[8] != LINE_PKT_FOOTER)
         {
-            debug_err_footer++; // フッターエラーをカウント
+            debug_err_footer++;
             line_rx_tail = (line_rx_tail + 1) % UART_BUF_SIZE;
             continue;
         }
 
-        // 3. チェックサム検証 (1〜6バイト目のXOR)
         uint8_t checksum = work_pkt[1] ^ work_pkt[2] ^ work_pkt[3]
                          ^ work_pkt[4] ^ work_pkt[5] ^ work_pkt[6];
         if (checksum != work_pkt[7])
         {
-            debug_err_checksum++; // チェックサムエラーをカウント
+            debug_err_checksum++;
             line_rx_tail = (line_rx_tail + 1) % UART_BUF_SIZE;
             continue;
         }
 
-        // --- 🎉 すべての検証に完全成功したパケット ---
         debug_ok_packet++;
 
         uint8_t  flags       = work_pkt[1];
@@ -253,15 +259,32 @@ void Sensor_Update(void)
         line_side_front = (sbits >> 14) & 0x01;
         line_side_right = (sbits >> 15) & 0x01;
 
+        // 💡 ここを追加：16個のビットから '1' の個数をカウントする
+        uint8_t bit_count = 0;
+        for (int i = 0; i < 16; i++)
+        {
+            if ((sbits & (1u << i)))
+            {
+                bit_count++;
+            }
+        }
+        line_detected_count = bit_count; // カウントした数をグローバル変数に格納
+
         line_data_valid = 1;
 
-        // パケットサイズ分バッファを進める
         line_rx_tail = (line_rx_tail + LINE_PKT_SIZE) % UART_BUF_SIZE;
     }
 }
 
 float Sensor_GetOmega(float goal_angle, uint8_t goal_detected)
 {
+    // 💡 修正：ジャイロ通信が死んでいる時は、PIDの蓄積エラーを消去し、旋回出力を強制停止する
+    if (!bno_online)
+    {
+        pid_integral = 0.0f;
+        return 0.0f;
+    }
+
     float yaw    = BNO055_GetYaw();
     float target = goal_detected ? goal_angle : 0.0f;
     float error  = target - yaw;
@@ -272,8 +295,11 @@ float Sensor_GetOmega(float goal_angle, uint8_t goal_detected)
 
 uint8_t Sensor_GetEscapeAngle(float *escape_angle)
 {
+    // 💡 タイマー用の static 変数はすべて不要になったので削除しました
+
     if (!line_on_line)
     {
+        // 💡 ラインから足が離れたら、1msの猶予もなく即座に通常処理へ復帰！
         line_pushed_out = 0;
         line_valid_prev = 0;
         return 0;
@@ -293,7 +319,7 @@ uint8_t Sensor_GetEscapeAngle(float *escape_angle)
             line_pushed_out = 1;
     }
 
-    float escape = dir + 180.0f;
+    float escape = line_angle_base + 180.0f;
     if (escape >  180.0f) escape -= 360.0f;
     if (escape < -180.0f) escape += 360.0f;
 
@@ -329,16 +355,55 @@ void BNO055_Init(void)
 
 float BNO055_GetYaw(void)
 {
+    static uint32_t last_i2c_tick = 0;
+    static float last_yaw = 0.0f;
+    static uint32_t error_count = 0; // 💡 連続エラーカウンターを新設
+    uint32_t current_tick = HAL_GetTick();
+
+    if (current_tick - last_i2c_tick < 10)
+    {
+        return last_yaw;
+    }
+    last_i2c_tick = current_tick;
+
     uint8_t buf[2];
-    HAL_I2C_Mem_Read(&hi2c2, BNO055_ADDR,
+    // 💡 確実に判定するため、タイムアウトを5msに少し緩和
+    HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c2, BNO055_ADDR,
                      BNO055_EUL_H_LSB, I2C_MEMADD_SIZE_8BIT,
-                     buf, 2, 100);
-    int16_t raw    = (int16_t)(buf[0] | (buf[1] << 8));
-    float   yaw    = (float)raw / 16.0f;
-    float   result = yaw - yaw_offset;
-    if (result >  180.0f) result -= 360.0f;
-    if (result < -180.0f) result += 360.0f;
-    return result;
+                     buf, 2, 5);
+
+    if (status == HAL_OK)
+    {
+        error_count = 0;
+        bno_online  = 1; // 通信正常
+
+        int16_t raw    = (int16_t)(buf[0] | (buf[1] << 8));
+        float   yaw    = (float)raw / 16.0f;
+        float   result = yaw - yaw_offset;
+        if (result >  180.0f) result -= 360.0f;
+        if (result < -180.0f) result += 360.0f;
+        last_yaw = result;
+        return result;
+    }
+    else
+    {
+        error_count++;
+
+        // 💡 連続5回（約50ms間）通信が途切れたらI2Cバスをリセットして自動復旧を試みる
+        if (error_count >= 5)
+        {
+            bno_online = 0; // 異常フラグを立ててモーターの暴走を即座にブロック
+
+            HAL_I2C_DeInit(&hi2c2);
+            HAL_I2C_Init(&hi2c2);
+
+            uint8_t mode = BNO055_NDOF_MODE;
+            HAL_I2C_Mem_Write(&hi2c2, BNO055_ADDR, BNO055_OPR_MODE, I2C_MEMADD_SIZE_8BIT, &mode, 1, 10);
+
+            error_count = 0;
+        }
+        return last_yaw;
+    }
 }
 
 float PID_Update(float error)

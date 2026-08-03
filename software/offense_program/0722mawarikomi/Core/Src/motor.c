@@ -11,11 +11,11 @@
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim8;
 
-// 💡 修正：motor.hの宣言と合わせるため static を削除
+// motor.hの宣言と合わせるため static を削除
 void SetMotorSpeed(uint8_t motor_id, int16_t speed);
 
 /**
-  * @brief  4輪オムニホイール走行関数 (main.cからの呼び出し用)
+  * @brief  4輪オムニホイール走行関数 (旋回力最優先スケーリング版)
   * @param  degrees: 移動方向 (度)
   * @param  speed: 移動速度
   * @param  turn_power: 旋回力 (omega)
@@ -23,36 +23,50 @@ void SetMotorSpeed(uint8_t motor_id, int16_t speed);
 void Drive_Omni(float degrees, float speed, float turn_power)
 {
     float rad = degrees * 3.14159265f / 180.0f;
-    float w[4];
+    float w_move[4];
 
-    // ホイール配置ベクトルに合わせたsin計算
-    w[0] = speed * sinf(rad - 3.14159265f * 45.0f  / 180.0f) + turn_power;
-    w[1] = speed * sinf(rad - 3.14159265f * 135.0f / 180.0f) + turn_power;
-    w[2] = speed * sinf(rad - 3.14159265f * 225.0f / 180.0f) + turn_power;
-    w[3] = speed * sinf(rad - 3.14159265f * 315.0f / 180.0f) + turn_power;
+    // 1. まず「移動成分だけ」を仮計算する（turn_powerはまだ足さない）
+    w_move[0] = speed * sinf(rad - 3.14159265f * 45.0f  / 180.0f);
+    w_move[1] = speed * sinf(rad - 3.14159265f * 135.0f / 180.0f);
+    w_move[2] = speed * sinf(rad - 3.14159265f * 225.0f / 180.0f);
+    w_move[3] = speed * sinf(rad - 3.14159265f * 315.0f / 180.0f);
 
-    float max_val = 0.0f;
+    // 2. 移動成分の中で、一番パワーが大きいモーターの絶対値を探す
+    float max_move = 0.0f;
     for (int i = 0; i < 4; i++) {
-        float abs_w = (w[i] < 0) ? -w[i] : w[i];
-        if (abs_w > max_val) max_val = abs_w;
+        float abs_move = (w_move[i] < 0) ? -w_move[i] : w_move[i];
+        if (abs_move > max_move) max_move = abs_move;
     }
 
-    // 最大値が1000を超えた場合のスケーリング
-    if (max_val > 1000.0f) {
+    // 3. 【ここがコアロジック！】ジャイロ（旋回）の枠を絶対に死守する
+    // モーターの限界値「1000」から、旋回が絶対に使いたいパワーを最初に差し引く
+    float allowable_max_move = 1000.0f - fabsf(turn_power);
+
+    // 万が一、旋回パワーだけで1000を超えそうな場合は移動枠を0にする
+    if (allowable_max_move < 0.0f) allowable_max_move = 0.0f;
+
+    // 4. 移動パワーが許容枠を超えていたら、進む向き（比率）を保ったまま全体を縮小する
+    if (max_move > allowable_max_move && max_move > 0.0f) {
+        float scale = allowable_max_move / max_move;
         for (int i = 0; i < 4; i++) {
-            w[i] = w[i] * 1000.0f / max_val;
+            w_move[i] *= scale;
         }
+    }
+
+    // 5. 確保しておいた安全な残り枠の中に、満を持して最優先の旋回力を足し算する
+    float w_final[4];
+    for (int i = 0; i < 4; i++) {
+        w_final[i] = w_move[i] + turn_power;
     }
 
     // 各モーターへ割り振り出力
     for (int i = 0; i < 4; i++) {
-        SetMotorSpeed(i + 1, (int16_t)w[i]);
+        SetMotorSpeed(i + 1, (int16_t)w_final[i]);
     }
 }
 
 /**
   * @brief  個別モーターのPWMピン出力制御関数
-  * 💡 修正：実体定義から static を削除して公開関数化
   */
 void SetMotorSpeed(uint8_t motor_id, int16_t speed)
 {

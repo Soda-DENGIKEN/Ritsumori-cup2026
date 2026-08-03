@@ -6,7 +6,6 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
@@ -20,6 +19,21 @@
 #include "sensor.h"
 #include "attack.h"
 /* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c2;
@@ -36,6 +50,23 @@ UART_HandleTypeDef huart2;
 static uint8_t sw_running = 0;
 static uint8_t sw_prev    = 0;
 
+// 💡 リンカエラー対策：変数たちの「本体（実体）」をここで定義します！
+volatile uint8_t  attack_goal_color = 0; // 0:青, 1:黄
+
+// 💡 ここに追加！個数を保持するグローバル変数の実体
+volatile uint8_t  line_detected_count = 0;
+
+// IR・ラインセンサーのUARTバッファの実体
+uint8_t rx_buf[256];
+volatile uint16_t rx_head = 0;
+volatile uint16_t rx_tail = 0;
+
+uint8_t line_rx_buf[256];
+volatile uint16_t line_rx_head = 0;
+volatile uint16_t line_rx_tail = 0;
+uint8_t line_rx_byte = 0;
+
+// 以下は main.c で使う他のファイルの変数の参照
 extern volatile uint8_t  line_calib_state;
 extern volatile uint32_t line_packet_count;
 extern volatile float    ball_angle;
@@ -45,13 +76,10 @@ extern volatile float    line_angle;
 extern volatile uint16_t line_sensor_bits;
 extern volatile uint8_t  goal_blue_detected;
 extern volatile float    goal_blue_angle;
+extern volatile uint8_t  goal_yellow_detected;
+extern volatile float    goal_yellow_angle;
 extern volatile float    yaw_offset;
 
-// 外部の診断カウンターを参照
-extern volatile uint32_t debug_err_header;
-extern volatile uint32_t debug_err_footer;
-extern volatile uint32_t debug_err_checksum;
-extern volatile uint32_t debug_ok_packet;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,7 +92,6 @@ static void MX_USART1_UART_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_UART5_Init(void);
 static void MX_USART2_UART_Init(void);
-
 /* USER CODE BEGIN PFP */
 void BNO055_Init(void);
 void Sensor_InitYawOffset(void);
@@ -78,11 +105,39 @@ void Sensor_ResumeLineRx(void);
 float Direct_Get_BNO055_Yaw(void);
 /* USER CODE END PFP */
 
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
+
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
 int main(void)
 {
+
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
   SystemClock_Config();
 
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM1_Init();
   MX_TIM8_Init();
@@ -91,7 +146,6 @@ int main(void)
   MX_I2C2_Init();
   MX_UART5_Init();
   MX_USART2_UART_Init();
-
   /* USER CODE BEGIN 2 */
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
@@ -235,53 +289,63 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-        uint8_t sw_state = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14);
-        if (sw_state == GPIO_PIN_SET && sw_prev == GPIO_PIN_RESET)
-        {
-            HAL_Delay(50);
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14) == GPIO_PIN_SET)
+      while (1)
+      {
+            // 1. スイッチのチャタリング防止とモード切替
+            uint8_t sw_state = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14);
+            if (sw_state == GPIO_PIN_SET && sw_prev == GPIO_PIN_RESET)
             {
-                sw_running = !sw_running;
+                HAL_Delay(50); // スイッチ押下時のみの一時的なデリートなのでOK
+                if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14) == GPIO_PIN_SET)
+                {
+                    sw_running = !sw_running;
 
-                char sw_msg[64];
-                snprintf(sw_msg, sizeof(sw_msg), ">>> MODE CHANGED: %s <<<\r\n", sw_running ? "RUN" : "STOP");
-                HAL_UART_Transmit(&huart4, (uint8_t*)sw_msg, strlen(sw_msg), 100);
+                    char sw_msg[64];
+                    snprintf(sw_msg, sizeof(sw_msg), ">>> MODE CHANGED: %s <<<\r\n", sw_running ? "RUN" : "STOP");
+                    HAL_UART_Transmit(&huart4, (uint8_t*)sw_msg, strlen(sw_msg), 100);
+                }
             }
-        }
-        sw_prev = sw_state;
+            sw_prev = sw_state;
 
-        Sensor_Update();
+            // 2. センサー値の更新（ここを最速で回す！）
+            Sensor_Update();
 
-        float omega = Sensor_GetOmega(goal_blue_angle, goal_blue_detected);
+            // 3. 姿勢制御 omega の計算
+            float omega;
+            if (attack_goal_color == 0) // 0 = ATTACK_BLUE
+            {
+                omega = Sensor_GetOmega(goal_blue_angle, goal_blue_detected);
+            }
+            else
+            {
+                omega = Sensor_GetOmega(goal_yellow_angle, goal_yellow_detected);
+            }
 
-        if (sw_running == 1)
-        {
-            Attack_Update(omega);
-        }
-        else
-        {
-            Drive_Omni(0.0f, 0.0f, 0.0f);
-        }
+            // 4. モーターへの出力命令
+            if (sw_running == 1)
+            {
+                Attack_Update(omega);
+            }
+            else
+            {
+                Drive_Omni(0.0f, 0.0f, 0.0f);
+            }
 
-        uint32_t current_tick = HAL_GetTick();
-                if (current_tick - last_debug_tick >= 50)
+            // ==========================================================
+            // 💡 変更点：ロボットが停止している（STOP）時だけデバッグ出力を出す！
+            // ==========================================================
+            if (sw_running == 0)
+            {
+                uint32_t current_tick = HAL_GetTick();
+                if (current_tick - last_debug_tick >= 100) // 停止時は100ms周期で十分
                 {
                     last_debug_tick = current_tick;
                     char tx_out[256];
                     int len = 0;
 
-                    // 💡 外部関数ではなく、上で作った直接取得関数を使ってジャイロの生死を確認
-                    float gyro_yaw = Direct_Get_BNO055_Yaw();
-                    char gyro_str[8];
-                    if (gyro_yaw == -999.0f) {
-                        snprintf(gyro_str, sizeof(gyro_str), "   ERR");
-                    } else {
-                        snprintf(gyro_str, sizeof(gyro_str), "%6.1f", gyro_yaw);
-                    }
+                    // 💡重い I2C 直接取得はやめ、通常更新された ball_angle や BNO055_GetYaw() を使い回す
+                    float gyro_yaw = BNO055_GetYaw();
 
-                    // 💡 ライン角度の表示判定（上部で宣言されているグローバルな line_on_line を使用）
                     char line_ang_str[8];
                     if (line_on_line) {
                         snprintf(line_ang_str, sizeof(line_ang_str), "%6.1f", line_angle);
@@ -289,38 +353,47 @@ int main(void)
                         snprintf(line_ang_str, sizeof(line_ang_str), "  NONE");
                     }
 
-                    // 💡 16個のセンサービットを文字列に展開
                     char line_bits_str[17];
                     for (int i = 0; i < 16; i++) {
                         line_bits_str[i] = (line_sensor_bits & (1u << i)) ? '1' : '0';
                     }
                     line_bits_str[16] = '\0';
 
-                    // 💡 型エラーを防ぐためにフォーマットを厳密化して出力
                     len += snprintf(tx_out + len, sizeof(tx_out) - len,
-                                    "[%s] IR_Ang:%6.1f | IR_Str:%5.1f | Yaw:%s | Line_Ang:%s | Line:[%s]\r\n",
-                                    (sw_running == 1 ? "RUN " : "STOP"),
-                                    ball_angle, ball_strength, gyro_str, line_ang_str, line_bits_str);
+                                    "[STOP ] IR_Ang:%6.1f | IR_Str:%5.1f | Yaw:%6.1f | Line_Ang:%s | Line:[%s]\r\n",
+                                    ball_angle, ball_strength, gyro_yaw, line_ang_str, line_bits_str);
 
                     HAL_UART_Transmit(&huart4, (uint8_t *)tx_out, len, 100);
                 }
+            }
 
-                HAL_Delay(5);
-            /* USER CODE END WHILE */
+            // 💡 変更点：HAL_Delay(5); を完全に削除！
+            // これによりマイコンが何もせずに待たされる時間がゼロになり、超高速でループします。
+
+      }
+    /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
-}
 
+/**
+  * @brief System Clock Configuration
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
+  /** Configure the main internal regulator output voltage
+  */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -336,11 +409,15 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
+  /** Activate the Over-Drive mode
+  */
   if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
 
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -354,8 +431,21 @@ void SystemClock_Config(void)
   }
 }
 
+/**
+  * @brief I2C2 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_I2C2_Init(void)
 {
+
+  /* USER CODE BEGIN I2C2_Init 0 */
+
+  /* USER CODE END I2C2_Init 0 */
+
+  /* USER CODE BEGIN I2C2_Init 1 */
+
+  /* USER CODE END I2C2_Init 1 */
   hi2c2.Instance = I2C2;
   hi2c2.Init.ClockSpeed = 100000;
   hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
@@ -369,15 +459,32 @@ static void MX_I2C2_Init(void)
   {
     Error_Handler();
   }
+  /* USER CODE BEGIN I2C2_Init 2 */
+
+  /* USER CODE END I2C2_Init 2 */
+
 }
 
+/**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_TIM1_Init(void)
 {
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
   TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 17;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -438,18 +545,33 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
-  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_ENABLE;
-  HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig);
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
   HAL_TIM_MspPostInit(&htim1);
+
 }
 
+/**
+  * @brief TIM8 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_TIM8_Init(void)
 {
+
+  /* USER CODE BEGIN TIM8_Init 0 */
+
+  /* USER CODE END TIM8_Init 0 */
+
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
   TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
+  /* USER CODE BEGIN TIM8_Init 1 */
+
+  /* USER CODE END TIM8_Init 1 */
   htim8.Instance = TIM8;
   htim8.Init.Prescaler = 17;
   htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -510,13 +632,28 @@ static void MX_TIM8_Init(void)
   {
     Error_Handler();
   }
-  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_ENABLE;
-  HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfig);
+  /* USER CODE BEGIN TIM8_Init 2 */
+
+  /* USER CODE END TIM8_Init 2 */
   HAL_TIM_MspPostInit(&htim8);
+
 }
 
+/**
+  * @brief UART4 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_UART4_Init(void)
 {
+
+  /* USER CODE BEGIN UART4_Init 0 */
+
+  /* USER CODE END UART4_Init 0 */
+
+  /* USER CODE BEGIN UART4_Init 1 */
+
+  /* USER CODE END UART4_Init 1 */
   huart4.Instance = UART4;
   huart4.Init.BaudRate = 115200;
   huart4.Init.WordLength = UART_WORDLENGTH_8B;
@@ -529,10 +666,27 @@ static void MX_UART4_Init(void)
   {
     Error_Handler();
   }
+  /* USER CODE BEGIN UART4_Init 2 */
+
+  /* USER CODE END UART4_Init 2 */
+
 }
 
+/**
+  * @brief UART5 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_UART5_Init(void)
 {
+
+  /* USER CODE BEGIN UART5_Init 0 */
+
+  /* USER CODE END UART5_Init 0 */
+
+  /* USER CODE BEGIN UART5_Init 1 */
+
+  /* USER CODE END UART5_Init 1 */
   huart5.Instance = UART5;
   huart5.Init.BaudRate = 115200;
   huart5.Init.WordLength = UART_WORDLENGTH_8B;
@@ -545,10 +699,27 @@ static void MX_UART5_Init(void)
   {
     Error_Handler();
   }
+  /* USER CODE BEGIN UART5_Init 2 */
+
+  /* USER CODE END UART5_Init 2 */
+
 }
 
+/**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_USART1_UART_Init(void)
 {
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
   huart1.Init.BaudRate = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
@@ -561,10 +732,27 @@ static void MX_USART1_UART_Init(void)
   {
     Error_Handler();
   }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
 }
 
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_USART2_UART_Init(void)
 {
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
   huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
@@ -577,29 +765,39 @@ static void MX_USART2_UART_Init(void)
   {
     Error_Handler();
   }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
 }
 
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
 
+  /* USER CODE END MX_GPIO_Init_1 */
+
+  /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
+  /*Configure GPIO pin : SW1_Pin */
   GPIO_InitStruct.Pin = SW1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SW1_GPIO_Port, &GPIO_InitStruct);
-}
 
-void Error_Handler(void)
-{
-  __disable_irq();
-  while (1)
-  {
-  }
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -619,3 +817,34 @@ float Direct_Get_BNO055_Yaw(void) {
     return -999.0f; // 通信エラー時は -999 を返す
 }
 /* USER CODE END 4 */
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
+  /* USER CODE END Error_Handler_Debug */
+}
+#ifdef USE_FULL_ASSERT
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t *file, uint32_t line)
+{
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* USER CODE END 6 */
+}
+#endif /* USE_FULL_ASSERT */
