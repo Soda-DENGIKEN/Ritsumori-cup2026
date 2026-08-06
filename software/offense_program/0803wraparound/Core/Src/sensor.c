@@ -74,7 +74,7 @@ static uint8_t line_collecting = 0;
 static float   line_angle_base  = 0.0f;  // 最初にラインを踏んだときの角度
 static uint8_t line_valid_prev  = 0;
 
-// 脱出タイマー＆角度保持用 (高速化・過走防止追加)
+// 脱出タイマー＆角度保持用 (💡 一時無効化のため未使用化)
 static uint32_t escape_timer_start = 0;
 static float    last_escape_angle  = 0.0f;
 
@@ -197,7 +197,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                             }
                             line_detected_count = count; // 反応数を更新
 
-                        // ⚡️ 白線検知中なら、割り込み内で即座に脱出角度とタイマーを更新！
+                        // 💡【一時無効化】250ms(実質50ms)保持ロジック用の
+                        // last_escape_angle / escape_timer_start 更新をコメントアウト。
+                        // 回り込みへの影響を切り分けるための一時措置。
+                        /*
                         if (new_line_on)
                         {
                             float dir = (float)angle_q / 10.0f;
@@ -208,6 +211,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                             last_escape_angle  = escape;
                             escape_timer_start = HAL_GetTick();
                         }
+                        */
 
                         line_on_line     = new_line_on;
                         line_sensor_bits = sbits;
@@ -271,11 +275,11 @@ float Sensor_GetOmega(float goal_angle, uint8_t goal_detected)
     return PID_Update(error);
 }
 
-// 脱出方向計算 + 押し出し検知 (250ms保持タイマー機能付き)
+// 脱出方向計算 + 押し出し検知
+// 💡【一時無効化】250ms(実質50ms)保持ロジックを無効化。
+// line_on_line が0になった瞬間、即座に0を返す（＝前のバージョンの挙動に戻す）。
 uint8_t Sensor_GetEscapeAngle(float *escape_angle)
 {
-    uint32_t now = HAL_GetTick();
-
     // 1. 現在白線を踏んでいる場合
     if (line_on_line)
     {
@@ -301,20 +305,22 @@ uint8_t Sensor_GetEscapeAngle(float *escape_angle)
         if (escape < -180.0f) escape += 360.0f;
 
         last_escape_angle  = escape;
-        escape_timer_start = now; // タイマー更新
+        escape_timer_start = HAL_GetTick(); // 参照はしないが値は保持しておく
 
         *escape_angle = escape;
         return 1;
     }
 
-    // 2. 慣性で白線を飛び越えて line_on_line が 0 になっても、250ms間は強制的・継続的にバック！
+    // 💡【一時無効化】ここが「250ms(実質50ms)保持」部分。丸ごとコメントアウト。
+    /*
     if (escape_timer_start != 0 && (now - escape_timer_start < 50))
     {
         *escape_angle = last_escape_angle;
         return 1;
     }
+    */
 
-    // 3. 250ms 経過して完全に白線エリアから脱出できたらリセット
+    // 2. ラインを離れたら即座にリセット（＝前のバージョンと同じ挙動）
     line_pushed_out    = 0;
     line_valid_prev    = 0;
     escape_timer_start = 0;

@@ -1,2 +1,1 @@
-../Core/Src/attack.c:31:14:AngleDiff	24	static
-../Core/Src/attack.c:39:6:Attack_Update	88	static
+../Core/Src/attack.c:14:6:Attack_Update	64	static

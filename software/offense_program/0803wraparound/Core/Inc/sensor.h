@@ -49,4 +49,6 @@ uint8_t Sensor_GetSideEscapeAngle(float *escape_angle);
 
 // sensor.h の末尾付近に追加
 uint8_t Sensor_GetSideEscapeAngle(float *escape_angle);
+
+extern volatile uint32_t i2c_fail_count;
 #endif /* INC_SENSOR_H_ */
