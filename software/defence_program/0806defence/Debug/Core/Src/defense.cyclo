@@ -1,0 +1,4 @@
+../Core/Src/defense.c:89:14:NormalizeAngle	3
+../Core/Src/defense.c:96:14:Rad2DegLocal	1
+../Core/Src/defense.c:101:14:Clamp	3
+../Core/Src/defense.c:118:6:Defense_Update	12
