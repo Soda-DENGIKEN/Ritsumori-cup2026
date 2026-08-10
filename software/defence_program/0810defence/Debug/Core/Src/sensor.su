@@ -1,0 +1,16 @@
+../Core/Src/sensor.c:117:14:AngleDiff	24	static
+../Core/Src/sensor.c:151:13:ComputeLineClusters	112	static
+../Core/Src/sensor.c:218:13:UpdateLinePrimaryAngle	32	static
+../Core/Src/sensor.c:266:6:HAL_UART_RxCpltCallback	48	static
+../Core/Src/sensor.c:408:6:Sensor_InitYawOffset	8	static
+../Core/Src/sensor.c:416:6:Sensor_Update	16	static
+../Core/Src/sensor.c:439:7:Sensor_GetOmega	32	static
+../Core/Src/sensor.c:452:9:Sensor_GetEscapeAngle	32	static
+../Core/Src/sensor.c:501:6:ParseIRData	24	static
+../Core/Src/sensor.c:522:6:BNO055_Init	32	static
+../Core/Src/sensor.c:532:7:BNO055_GetYaw	40	static
+../Core/Src/sensor.c:546:7:PID_Update	40	static
+../Core/Src/sensor.c:572:9:Sensor_GetSideWarning	4	static
+../Core/Src/sensor.c:584:6:Sensor_ResetYawOnly	8	static
+../Core/Src/sensor.c:590:6:Sensor_ResumeLineRx	8	static
+../Core/Src/sensor.c:595:9:Sensor_GetSideEscapeAngle	32	static

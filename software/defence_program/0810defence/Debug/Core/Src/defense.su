@@ -1,0 +1,4 @@
+../Core/Src/defense.c:92:14:NormalizeAngle	16	static
+../Core/Src/defense.c:99:14:Rad2DegLocal	16	static
+../Core/Src/defense.c:104:14:Clamp	24	static
+../Core/Src/defense.c:113:6:Defense_Update	64	static
