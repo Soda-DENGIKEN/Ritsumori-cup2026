@@ -47,7 +47,7 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-static uint8_t sw_running = 0; // 0:停止(デバッグ出力あり), 1:動作中(デバッグ出力なし)
+uint8_t sw_running = 0; // 0:停止(デバッグ出力あり), 1:動作中(デバッグ出力なし)
 static uint8_t sw_prev    = 0;
 
 //volatile uint8_t  line_detected_count = 0;

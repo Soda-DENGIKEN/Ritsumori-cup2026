@@ -1,33 +1,7 @@
 /*
  * defense.c
  *
- * ゴールキーパー制御ロジック
- *
- * 前提となる設計（会話でまとめた内容）:
- *  - ロボットは常にフィールド正面(0°)を向いたまま姿勢を固定する
- *  - ロボットの後ろ半分だけが自ゴールエリア内に入っている状態を維持する
- *  - 正しい深さのとき、ライン検出角度(line_angle)はロボット中心から見て
- *    ほぼ±90°になる
- *      - |line_angle| が 90° より小さくなる(0°側に近づく) → 下がりすぎ
- *      - |line_angle| が 90° より大きくなる(180°側に近づく) → 前に出すぎ
- *    → depth_error = |line_angle| - 90.0f を連続的な誤差信号として使う
- *  - depth_error に応じて前後方向(vy)を比例制御で補正する
- *    （カーブ・斜めのラインに差し掛かっても同じ式で自然になぞれる。
- *      直線・カーブ・斜めのどの区間でも「正しい深さからズレるほど
- *      line_angleが90°から離れる」という関係は変わらないため、
- *      特別な分岐を追加しなくてもこの仕組みでライントレースできる）
- *  - ボールの左右方向(ball_angle)に応じて横方向(vx)を比例制御で追従する
- *    ことを最優先とする
- *  - ボール追従中は depth_priority_scale で深さ補正を弱めるが、
- *    カーブ・斜め区間（depth_errorが大きい）では自動的にライン側の
- *    優先度を引き上げ、はみ出しすぎを防ぐ
- *  - さらに、ラインに乗っている間もdepth_errorが臨界値(60°)に近づく
- *    (40°を超える)ほどvxをなだらかに絞り、切り替わってからではなく
- *    先回りで減速する。ライン完全喪失時はさらに強く絞る
- *  - vx, vy をベクトル合成して1回のOmni_Driveにまとめる
- *  - ラインを完全に見失った(line_on_line=0)ときは、後退して再接触を試みる
- *  - サイドセンサー(A13/A15)は、ライン非検出時の異常検知・保険的なフォール
- *    バックとしてのみ使う（通常時のハード制限には使わない）
+ * ゴールキーパー制御ロジック（ハンチング対策・安定追従版）
  */
 
 #include "defense.h"
@@ -37,60 +11,101 @@
 
 /* ==================== 調整パラメータ ==================== */
 
-#define KEEPER_BASE_HOLD_SPEED     150.0f   /* 静止構え時の基礎応答速度スケール */
-
-/* 前後(深さ)制御 */
-#define KEEPER_DEPTH_KP            5.0f     /* depth_error 1度あたりの前後速度 */
-#define KEEPER_DEPTH_DEADZONE      30.0f    /* depth_errorの不感帯[deg]（実機調整済み） */
-#define KEEPER_DEPTH_MAX_SPEED     300.0f   /* 前後方向の速度上限（サチュレーション） */
-#define KEEPER_LOST_LINE_SPEED     250.0f   /* ライン見失い時、再接触に向かう後退速度 */
-
 /* 左右(ボール追従)制御 */
-#define KEEPER_TRACK_KP            4.0f     /* ball_angle 1度あたりの左右速度 */
-#define KEEPER_TRACK_DEADZONE      5.0f     /* ball_angleの不感帯[deg] */
-#define KEEPER_TRACK_MAX_SPEED     500.0f   /* 左右方向の速度上限 */
-#define KEEPER_RETURN_KP           0.3f     /* ボール未検出時、中央へ戻す減衰係数 */
+#define KEEPER_TRACK_KP            8.5f     /* 追従ゲイン */
+#define KEEPER_TRACK_DEADZONE      1.5f     /* 不感帯（揺らぎ防止のため少し拡大） */
+#define KEEPER_TRACK_MAX_SPEED     800.0f   /* 追従の限界速度 */
+#define KEEPER_RETURN_KP           0.3f     /* ボール未検出時の減衰係数 */
 
-/* ボール検出時、depth_error（カーブ・斜め区間のきつさ）に応じて
-   深さ補正の強さを可変にする
-   - カーブ・斜めが緩い(depth_errorが小さい)ほどボール優先(scaleは小さい)
-   - きつい(depth_errorが大きい)ほどライン優先(scaleは大きい) */
-#define KEEPER_DEPTH_SCALE_BALL_MIN   0.15f  /* 直線に近い時：ボールをほぼ優先 */
-#define KEEPER_DEPTH_SCALE_BALL_MAX   0.7f   /* きついカーブ/斜めの時：ラインを強める */
-#define KEEPER_CURVE_NORM_DEG         90.0f  /* この角度でcurve_severityが1.0に達する */
+/* ライン制御パラメータ */
+#define LINE_SENSOR_COUNT         12
+#define LINE_SENSOR_ANGLE_STEP    30.0f
+#define LINE_SENSOR_A6_ANGLE       0.0f
 
-/* 逸脱防止フェイルセーフ：depth_errorが臨界値に近づくほど、
-   なだらかにvxを絞る（切り替わってから反応するのでは遅いため、
-   ラインに乗っている間に先回りして減速する） */
-#define KEEPER_DEPTH_WARN_DEG          40.0f  /* ここから絞り始める */
-#define KEEPER_DEPTH_CRITICAL_DEG      60.0f  /* ここでほぼ0まで絞る */
-#define KEEPER_DEPTH_CRITICAL_VX_FLOOR 0.05f  /* 最低でも残す比率 */
+#define ROBOT_RADIUS           62.0f
+#define LINE_POS_KP               3.5f     /* ライン中心復帰ゲイン */
 
-/* ライン完全喪失時用の抑制倍率（斜めの端で突っ切ってしまうのを防ぐ） */
-#define KEEPER_LOST_LINE_VX_SCALE      0.15f
+/* パターン制御パラメータ */
+#define KEEPER_PUSH_VY_SPEED      -350.0f
+#define VELOCITY_LPF_ALPHA         0.30f    /* 少し滑らかにしてハンチング抑止 */
 
-/* 全体速度の最終上限（motor.c側のOmni_Driveでも1000でクリップされるが、
-   キーパーとしては暴れすぎ防止のため別途抑える） */
-#define KEEPER_MAX_TOTAL_SPEED     700.0f
+#define TARGET_PATTERN_1_MASK ((1u << 0) | (1u << 6) | (1u << 7) | (1u << 12))
+#define TARGET_PATTERN_2_MASK ((1u << 1) | (1u << 3) | (1u << 4) | (1u << 9))
+#define TARGET_PATTERN_3_MASK ((1u << 2) | (1u << 6) | (1u << 10) | (1u << 14) | (1u << 15))
+#define TARGET_PATTERN_4_MASK ((1u << 1) | (1u << 2) | (1u << 6) | (1u << 11))
+#define TARGET_PATTERN_5_MASK ((1u << 2) | (1u << 8))
+#define TARGET_PATTERN_6_MASK ((1u << 1) | (1u << 2) | (1u << 3) | (1u << 13))
 
-/* サイドセンサーのデバウンス回数（保険的フォールバック用） */
-#define KEEPER_SIDE_DEBOUNCE_COUNT 4
+#define SLOW_DOWN_FACTOR          0.5f
+#define DURATION_2_SEC_CYCLES     200
+#define KEEPER_MAX_TOTAL_SPEED     850.0f
 
-/* ==================== 内部状態 ==================== */
-
+/* 内部状態 */
 static float   ball_angle_filtered = 0.0f;
-static float   vx_prev             = 0.0f;   /* 未検出時のセンター復帰用に前回値を保持 */
+static float   vx_prev             = 0.0f;
+static float   vx_filtered         = 0.0f;
+static float   vy_filtered         = 0.0f;
+static uint16_t slowdown_timer     = 0;
+static uint16_t push_back_timer    = 0;
 
-static uint8_t side_left_off_count  = 0;
-static uint8_t side_right_off_count = 0;
-
-/* ==================== 内部ユーティリティ ==================== */
-
-static float NormalizeAngle(float angle)
+static float SensorIndexToAngleDeg(uint8_t idx)
 {
+    float angle = LINE_SENSOR_A6_ANGLE + ((float)idx - 6.0f) * LINE_SENSOR_ANGLE_STEP;
     while (angle >  180.0f) angle -= 360.0f;
     while (angle < -180.0f) angle += 360.0f;
     return angle;
+}
+
+static void AngleToXY(float angle_deg, float *x, float *y)
+{
+    float rad = angle_deg * 3.14159265f / 180.0f;
+    *x = sinf(rad);   /* 90°で X=1 (右) */
+    *y = cosf(rad);   /*  0°で Y=1 (正面) */
+}
+
+/* ラインの法線ベクトル（ロボットを押し戻す方向）と中心ズレ(d)のみを計算 */
+static uint8_t ComputeLineNormal(float *out_nx, float *out_ny, float *out_d)
+{
+    uint16_t main_bits = line_sensor_bits & 0x0FFF;
+    uint8_t count = 0;
+    float sum_x = 0.0f;
+    float sum_y = 0.0f;
+
+    for (uint8_t i = 0; i < LINE_SENSOR_COUNT; i++)
+    {
+        if (main_bits & (1u << i))
+        {
+            float ax, ay;
+            AngleToXY(SensorIndexToAngleDeg(i), &ax, &ay);
+            sum_x += ax;
+            sum_y += ay;
+            count++;
+        }
+    }
+
+    if (count == 0)
+    {
+        *out_nx = 0.0f; *out_ny = 0.0f; *out_d = 0.0f;
+        return 0;
+    }
+
+    /* 反応したセンサーの平均ベクトル */
+    float mx = sum_x / (float)count;
+    float my = sum_y / (float)count;
+    float len = sqrtf(mx * mx + my * my);
+
+    if (len > 1e-3f)
+    {
+        *out_nx = mx / len;
+        *out_ny = my / len;
+        *out_d  = len * ROBOT_RADIUS;
+    }
+    else
+    {
+        *out_nx = 0.0f; *out_ny = 0.0f; *out_d = 0.0f;
+    }
+
+    return count;
 }
 
 static float Rad2DegLocal(float rad)
@@ -105,106 +120,93 @@ static float Clamp(float v, float min_v, float max_v)
     return v;
 }
 
-/* ==================== メイン処理 ==================== */
-
-/**
- * @brief ゴールキーパーの1周期分の制御を実行する。
- *        main.cのループから毎周期呼ぶ想定。
- *        omegaはmain.c側で Sensor_GetOmega(0.0f, 1) により
- *        yaw=0固定のPIDとして計算したものを渡す。
- *
- * @param omega 姿勢制御用の角速度指令
- */
+/* メイン処理 */
 void Defense_Update(float omega)
 {
-    float vx = 0.0f;   /* 左右方向の速度成分（+側を右方向とする） */
-    float vy = 0.0f;   /* 前後方向の速度成分（+側を後退方向とする） */
+    float vx = 0.0f;
+    float vy = 0.0f;
 
-    /* ---------------------------------------------------------
-     * ① 深さ(前後位置)制御：ラインに追従（ライントレース的）
-     *    直線・カーブ・斜め区間すべて同じ式で扱う
-     * --------------------------------------------------------- */
-    float depth_error = 0.0f;
-    if (line_on_line)
-    {
-        float abs_line_angle = fabsf(NormalizeAngle(line_angle));
-        depth_error = abs_line_angle - 90.0f;
-        side_left_off_count  = 0;
-        side_right_off_count = 0;
-    }
-    else
-    {
-        vy = KEEPER_LOST_LINE_SPEED;
-    }
-
-    /* ---------------------------------------------------------
-     * ② 左右方向：ボール追従を最優先（ただしカーブ・斜めがきつい時は
-     *    ライン側の優先度を自動的に引き上げる）
-     * --------------------------------------------------------- */
-    float depth_priority_scale;
+    /* ① ボール追従速度（純粋な左右移動 X軸） */
     if (ball_detected)
     {
         ball_angle_filtered = 0.7f * ball_angle_filtered + 0.3f * ball_angle;
+
         if (fabsf(ball_angle_filtered) > KEEPER_TRACK_DEADZONE)
         {
+            /* ボールが右(+角度)なら +X(右) へ、左(-角度)なら -X(左) へ */
             vx = KEEPER_TRACK_KP * ball_angle_filtered;
             vx = Clamp(vx, -KEEPER_TRACK_MAX_SPEED, KEEPER_TRACK_MAX_SPEED);
         }
-
-        /* depth_error（カーブ・斜めのきつさ）に応じてscaleを可変にする */
-        float curve_severity = fabsf(depth_error) / KEEPER_CURVE_NORM_DEG;
-        if (curve_severity > 1.0f) curve_severity = 1.0f;
-        depth_priority_scale = KEEPER_DEPTH_SCALE_BALL_MIN
-                              + (KEEPER_DEPTH_SCALE_BALL_MAX - KEEPER_DEPTH_SCALE_BALL_MIN) * curve_severity;
     }
     else
     {
         ball_angle_filtered = 0.0f;
         vx = vx_prev * (1.0f - KEEPER_RETURN_KP);
         if (fabsf(vx) < 5.0f) vx = 0.0f;
-        depth_priority_scale = 1.0f;
-    }
-    vx_prev = vx;
-
-    if (line_on_line && fabsf(depth_error) > KEEPER_DEPTH_DEADZONE)
-    {
-        vy = -KEEPER_DEPTH_KP * depth_error * depth_priority_scale;
-        vy = Clamp(vy, -KEEPER_DEPTH_MAX_SPEED, KEEPER_DEPTH_MAX_SPEED);
     }
 
-    /* ---------------------------------------------------------
-     * ②.5 逸脱防止フェイルセーフ：ライン喪失時は強く絞り、
-     *      ラインに乗っている間もdepth_errorが臨界値に近づくほど
-     *      なだらかにvxを絞って先回りで減速する
-     * --------------------------------------------------------- */
-    if (!line_on_line)
+    /* ② ライン位置補正（前後の押し戻し Y軸 ＋ ズレ抑制） */
+    float norm_x = 0.0f, norm_y = 0.0f, chord_d = 0.0f;
+    uint8_t line_hit_count = ComputeLineNormal(&norm_x, &norm_y, &chord_d);
+
+    if (line_hit_count >= 1)
     {
-        vx *= KEEPER_LOST_LINE_VX_SCALE;
-    }
-    else
-    {
-        float d = fabsf(depth_error);
-        if (d > KEEPER_DEPTH_WARN_DEG)
+        /* 白線から脱走しないように前後に押す力を Y 軸に加える */
+        /* norm_y が正（前側に白線）なら正面へ、負（後側に白線）なら後ろへ補正 */
+        float push_y = norm_y * chord_d * LINE_POS_KP;
+        vy += push_y;
+
+        /* ラインから大幅にハミ出そうになっている場合は、追従速度(vx)を安全に制限 */
+        if (chord_d > 45.0f)
         {
-            float t = (d - KEEPER_DEPTH_WARN_DEG)
-                    / (KEEPER_DEPTH_CRITICAL_DEG - KEEPER_DEPTH_WARN_DEG);
-            if (t > 1.0f) t = 1.0f;
-            float scale = 1.0f - t * (1.0f - KEEPER_DEPTH_CRITICAL_VX_FLOOR);
-            vx *= scale;
+            vx *= 0.3f;
         }
     }
 
-    /* ---------------------------------------------------------
-     * ③ ベクトル合成してOmni_Driveへ
-     * --------------------------------------------------------- */
-    float speed = sqrtf(vx * vx + vy * vy);
+    /* ③ パターン検出（特定ラインパターンの緊急制御） */
+    uint8_t p1_match = ((line_sensor_bits & TARGET_PATTERN_1_MASK) == TARGET_PATTERN_1_MASK);
+    uint8_t p2_match = ((line_sensor_bits & TARGET_PATTERN_2_MASK) == TARGET_PATTERN_2_MASK);
+    uint8_t p3_match = ((line_sensor_bits & TARGET_PATTERN_3_MASK) == TARGET_PATTERN_3_MASK);
+    uint8_t p4_match = ((line_sensor_bits & TARGET_PATTERN_4_MASK) == TARGET_PATTERN_4_MASK);
+    uint8_t p5_match = ((line_sensor_bits & TARGET_PATTERN_5_MASK) == TARGET_PATTERN_5_MASK);
+    uint8_t p6_match = ((line_sensor_bits & TARGET_PATTERN_6_MASK) == TARGET_PATTERN_6_MASK);
+
+    if (p3_match || p4_match) push_back_timer = DURATION_2_SEC_CYCLES;
+    if (p1_match || p2_match || p5_match || p6_match) slowdown_timer = DURATION_2_SEC_CYCLES;
+
+    if (push_back_timer > 0)
+    {
+        vx = 0.0f;
+        vy = KEEPER_PUSH_VY_SPEED;
+        push_back_timer--;
+    }
+    else if (slowdown_timer > 0)
+    {
+        if (p1_match) { if (vx < 0.0f) vx = 0.0f; if (vy > 0.0f) vy = 0.0f; }
+        if (p2_match) { if (vx > 0.0f) vx = 0.0f; if (vy > 0.0f) vy = 0.0f; }
+        vx *= SLOW_DOWN_FACTOR;
+        vy *= SLOW_DOWN_FACTOR;
+        slowdown_timer--;
+    }
+
+    vx_prev = vx;
+
+    /* ④ LPF（平滑化） */
+    vx_filtered = (1.0f - VELOCITY_LPF_ALPHA) * vx_filtered + VELOCITY_LPF_ALPHA * vx;
+    vy_filtered = (1.0f - VELOCITY_LPF_ALPHA) * vy_filtered + VELOCITY_LPF_ALPHA * vy;
+
+    if (push_back_timer > 0)
+    {
+        vx_filtered = 0.0f;
+        vy_filtered = KEEPER_PUSH_VY_SPEED;
+    }
+
+    /* ⑤ 出力計算 */
+    float speed = sqrtf(vx_filtered * vx_filtered + vy_filtered * vy_filtered);
     if (speed > KEEPER_MAX_TOTAL_SPEED) speed = KEEPER_MAX_TOTAL_SPEED;
 
-    float angle = Rad2DegLocal(atan2f(vx, vy));
+    /* 実績コードと同じ変換 */
+    float angle = Rad2DegLocal(atan2f(vx_filtered, vy_filtered));
 
     Omni_Drive(angle, speed, omega);
 }
-
-/* 姿勢制御(omega)はmain.c側で Sensor_GetOmega(0.0f, 1) を使って
- * yaw=0固定のPIDとして計算済みのため、ここでは専用関数を持たない。
- */

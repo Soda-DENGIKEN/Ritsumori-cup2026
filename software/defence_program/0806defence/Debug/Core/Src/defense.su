@@ -1,4 +1,6 @@
-../Core/Src/defense.c:89:14:NormalizeAngle	16	static
-../Core/Src/defense.c:96:14:Rad2DegLocal	16	static
-../Core/Src/defense.c:101:14:Clamp	24	static
-../Core/Src/defense.c:118:6:Defense_Update	64	static
+../Core/Src/defense.c:51:14:SensorIndexToAngleDeg	24	static
+../Core/Src/defense.c:59:13:AngleToXY	32	static
+../Core/Src/defense.c:67:16:ComputeLineNormal	64	static
+../Core/Src/defense.c:111:14:Rad2DegLocal	16	static
+../Core/Src/defense.c:116:14:Clamp	24	static
+../Core/Src/defense.c:124:6:Defense_Update	64	static

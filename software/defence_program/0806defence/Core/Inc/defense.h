@@ -9,5 +9,6 @@
  *   Defense_Update(omega);
  */
 void Defense_Update(float omega);
+void Defense_ResetLateralPosition(void);
 
 #endif /* DEFENSE_H */
